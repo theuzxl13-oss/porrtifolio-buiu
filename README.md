@@ -56,7 +56,7 @@ topo, sobre, serviços, marcas, portfólio, lojas, depoimentos, perguntas freque
   `<meta name="description">`, porque o Google e o WhatsApp leem essas tags sem executar JavaScript.
 
 ### Depois de qualquer alteração: atualize a versão
-No `index.html`, aumente o número em `?v=1.4.0` (ex.: para `?v=1.4.1`) **em todas as linhas**
+No `index.html`, aumente o número em `?v=1.5.0` (ex.: para `?v=1.5.1`) **em todas as linhas**
 (`estilo.css`, `conteudo.js`, `app.js` e ícones). Assim, quem já visitou o site não continua vendo a
 versão antiga guardada em cache.
 
@@ -89,11 +89,11 @@ As marcas aparecem em cartões só com o nome, sem logotipos. Se um fabricante a
 a imagem em `assets/marcas/`, preencha `imagem` e mude `imagemAutorizada` para `true`.
 
 ## Visual
-Visual claro e confiante nas cores da marca:
-- **Cores:** um preto de marca nos textos e nas seções escuras; o amarelo como destaque no botão principal, no filtro ativo e nos títulos sobre fundo escuro; um creme suave para etiquetas e realces.
-- **Títulos:** Inter Black (900), bem pesados e compactos.
-- **Formas:** botões, menu e etiquetas em formato de pílula; cartões com cantos arredondados.
-- **Seções:** fundos brancos, cinza-claro e creme se alternam com a seção escura das lojas e o cartão escuro de contato.
+Tema escuro, como uma oficina à noite, nas cores da marca:
+- **Fundo e painéis:** preto quente; os cartões ficam um degrau mais claros, com contorno fino e um fio âmbar embaixo.
+- **Títulos:** Inter leve (peso 300).
+- **Amarelo:** um degradê amarelo-âmbar (“brasa”) aparece só no botão principal e no botão flutuante do WhatsApp.
+- **Brilhos:** brilhos âmbar bem suaves no topo, na galeria e no rodapé.
 - **Personalizar:** as cores ficam no começo de `css/estilo.css`.
 
 ## 4. O que já está pronto

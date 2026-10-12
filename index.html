@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Cardoso Baterias | Bateria nova, instalação na hora — Embu-Guaçu, Cipó e Jardim Ângela</title>
   <meta name="description" content="Cardoso Baterias: troca e instalação de bateria automotiva na hora, teste de bateria e alternador. Lojas em Embu-Guaçu, Cipó e Jardim Ângela (SP). Nota 4,9 no Google. Orçamento pelo WhatsApp.">
-  <meta name="theme-color" content="#0b0b0c">
+  <meta name="theme-color" content="#0f0d0a">
 
   <!-- Open Graph (compartilhamento no WhatsApp/Facebook).
        Se o endereço do site mudar, atualize og:url e og:image. -->
@@ -21,15 +21,15 @@
   <meta property="og:image:alt" content="Cardoso Baterias — Bateria nova, instalação na hora">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="icon" href="assets/img/favicon.svg?v=1.4.0" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1.4.0">
+  <link rel="icon" href="assets/img/favicon.svg?v=1.5.0" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1.5.0">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap">
 
   <!-- VERSÃO: ao atualizar CSS/JS/conteúdo, aumente o número em ?v= (ex.: 1.0.1) -->
-  <link rel="stylesheet" href="css/estilo.css?v=1.4.0">
+  <link rel="stylesheet" href="css/estilo.css?v=1.5.0">
 </head>
 <body>
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
@@ -37,7 +37,7 @@
   <header class="topo" id="topo">
     <div class="container topo__barra">
       <a class="topo__logo" href="#inicio" aria-label="Cardoso Baterias — início">
-        <img data-logo="claro" src="assets/img/logo.png" alt="Cardoso Baterias" width="132" height="42">
+        <img data-logo="escuro" src="assets/img/logo-fundo-escuro.png" alt="Cardoso Baterias" width="132" height="42">
       </a>
       <button class="topo__menu-btn" type="button" aria-expanded="false" aria-controls="menu-principal">
         <span class="topo__menu-icone" aria-hidden="true"></span>
@@ -78,17 +78,14 @@
         </div>
         <div class="hero__arte" aria-hidden="true">
           <svg class="ilustra ilustra--bateria" viewBox="0 0 260 190">
-            <rect x="48" y="6" width="44" height="26" rx="8" fill="#d9d6cc"/>
-            <rect x="168" y="6" width="44" height="26" rx="8" fill="#d9d6cc"/>
-            <rect x="6" y="26" width="248" height="158" rx="30" fill="#141414"/>
-            <rect x="6" y="26" width="248" height="46" rx="22" fill="#ffc000"/>
-            <rect x="6" y="54" width="248" height="18" fill="#ffc000"/>
-            <path d="M54 49h22M65 38v22M184 49h22" stroke="#141414" stroke-width="7" stroke-linecap="round"/>
-            <path d="M140 88 104 138h26l-10 38 40-56h-26l10-32z" fill="#ffc000"/>
-          </svg>
-          <svg class="ilustra ilustra--selo" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="48" fill="#ffc000"/>
-            <path d="m30 52 13 13 27-29" fill="none" stroke="#141414" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="brasa" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#ffc000"/><stop offset="1" stop-color="#ff7a00"/></linearGradient>
+            </defs>
+            <rect x="48" y="6" width="44" height="26" rx="8" fill="#3f3b34"/>
+            <rect x="168" y="6" width="44" height="26" rx="8" fill="#3f3b34"/>
+            <rect x="6.5" y="26.5" width="247" height="157" rx="30" fill="#1d1a15" stroke="rgba(255,255,255,.14)"/>
+            <path d="M54 49h22M65 38v22M184 49h22" stroke="#a29d93" stroke-width="6" stroke-linecap="round"/>
+            <path d="M144 70 98 134h32l-12 46 52-72h-32l12-38z" fill="url(#brasa)"/>
           </svg>
         </div>
       </div>
@@ -101,7 +98,7 @@
           <p class="sobretitulo">Sobre a Cardoso Baterias</p>
           <h2 id="sobre-titulo" class="titulo" data-c="sobre.titulo">Quem somos</h2>
           <div id="sobre-texto" class="texto-longo"></div>
-          <img class="sobre__logo" data-logo="claro" src="assets/img/logo.png" alt="Cardoso Baterias" width="260" height="83" loading="lazy">
+          <img class="sobre__logo" data-logo="escuro" src="assets/img/logo-fundo-escuro.png" alt="Cardoso Baterias" width="260" height="83" loading="lazy">
         </div>
         <ul class="diferenciais" id="diferenciais"></ul>
       </div>
@@ -201,7 +198,7 @@
   <footer class="rodape">
     <div class="container rodape__grade">
       <div>
-        <img data-logo="claro" src="assets/img/logo.png" alt="Cardoso Baterias" width="132" height="42" loading="lazy">
+        <img data-logo="escuro" src="assets/img/logo-fundo-escuro.png" alt="Cardoso Baterias" width="132" height="42" loading="lazy">
         <p class="rodape__nota" id="rodape-nota"></p>
       </div>
       <div>
@@ -251,7 +248,7 @@
     <p class="noscript">Para ver todo o conteúdo, ative o JavaScript. Orçamento pelo WhatsApp: <a href="https://wa.me/5511962986718">(11) 96298-6718</a>.</p>
   </noscript>
 
-  <script src="js/conteudo.js?v=1.4.0"></script>
-  <script src="js/app.js?v=1.4.0"></script>
+  <script src="js/conteudo.js?v=1.5.0"></script>
+  <script src="js/app.js?v=1.5.0"></script>
 </body>
 </html>
