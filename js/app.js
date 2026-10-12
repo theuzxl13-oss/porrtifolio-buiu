@@ -121,8 +121,10 @@
     $(".hero__fundo").style.backgroundImage = "linear-gradient(90deg,rgba(11,11,12,.92) 30%,rgba(11,11,12,.55)),url('" + C.hero.imagem + "')";
     $(".hero").classList.add("hero--foto");
   }
+  var linkGoogle = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(C.google.buscaMaps);
+  $$("[data-maps]").forEach(function (a) { a.href = linkGoogle; });
   var nota = $("#nota-google");
-  nota.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(C.google.buscaMaps);
+  nota.href = linkGoogle;
   nota.innerHTML =
     '<span class="nota-google__g" aria-hidden="true">G</span>' +
     '<span class="nota-google__num">' + mediaTxt + "</span>" + estrelas(mediaPond) +
@@ -142,8 +144,8 @@
   $("#lista-servicos").innerHTML = C.servicos.map(function (s) {
     return '<li class="servico">' + icone(s.icone, "servico__icone") +
       "<h3>" + esc(s.titulo) + "</h3><p>" + esc(s.texto) + "</p>" +
-      '<a class="btn btn--whats btn--bloco" href="' + esc(linkWhats(s.mensagem)) + '" target="_blank" rel="noopener" aria-label="Agendar ' + esc(s.titulo.toLowerCase()) + ' pelo WhatsApp">' +
-      icone("whats", "icone icone--btn") + "Agendar pelo WhatsApp</a></li>";
+      '<a class="btn btn--fantasma btn--seta" href="' + esc(linkWhats(s.mensagem)) + '" target="_blank" rel="noopener" aria-label="Agendar ' + esc(s.titulo.toLowerCase()) + ' pelo WhatsApp">' +
+      "Agendar pelo WhatsApp</a></li>";
   }).join("");
 
   /* ------------------------------- marcas ------------------------------- */
@@ -300,9 +302,9 @@
   }
   function botoesLoja(l) {
     return '<div class="loja__botoes">' +
-      '<a class="btn btn--whats" href="' + esc(linkWhats(mensagemLoja(l), l.whatsapp)) + '" target="_blank" rel="noopener" aria-label="WhatsApp da unidade ' + esc(l.apelido) + '">' + icone("whats", "icone icone--btn") + "WhatsApp</a>" +
-      (ok(l.telefone) ? '<a class="btn btn--claro" href="' + linkTel(l.telefone) + '" aria-label="Ligar para a unidade ' + esc(l.apelido) + ": " + esc(l.telefone) + '">' + icone("telefone", "icone icone--btn") + "Ligar</a>" : "") +
-      '<a class="btn btn--contorno" href="' + esc(linkMaps(l)) + '" target="_blank" rel="noopener" aria-label="Como chegar à unidade ' + esc(l.apelido) + ' (abre o Google Maps)">' + icone("pino", "icone icone--btn") + "Como chegar</a>" +
+      '<a class="btn btn--branco" href="' + esc(linkWhats(mensagemLoja(l), l.whatsapp)) + '" target="_blank" rel="noopener" aria-label="WhatsApp da unidade ' + esc(l.apelido) + '">' + icone("whats", "icone icone--btn") + "WhatsApp</a>" +
+      (ok(l.telefone) ? '<a class="btn btn--linha" href="' + linkTel(l.telefone) + '" aria-label="Ligar para a unidade ' + esc(l.apelido) + ": " + esc(l.telefone) + '">' + icone("telefone", "icone icone--btn") + "Ligar</a>" : "") +
+      '<a class="btn btn--linha" href="' + esc(linkMaps(l)) + '" target="_blank" rel="noopener" aria-label="Como chegar à unidade ' + esc(l.apelido) + ' (abre o Google Maps)">' + icone("pino", "icone icone--btn") + "Como chegar</a>" +
       "</div>";
   }
 
@@ -388,7 +390,7 @@
       ents.forEach(function (en) { if (en.isIntersecting) visiveisAlvos.add(en.target); else visiveisAlvos.delete(en.target); });
       fab.classList.toggle("whats-flutuante--oculto", visiveisAlvos.size > 0);
     });
-    [".hero__acoes", "#contato .btn--whats", ".rodape"].forEach(function (s) { var el = $(s); if (el) io.observe(el); });
+    [".hero__acoes", "#contato .btn--giallo", ".rodape"].forEach(function (s) { var el = $(s); if (el) io.observe(el); });
   }
 
   /* ------------------- dados estruturados (schema.org) ------------------- */

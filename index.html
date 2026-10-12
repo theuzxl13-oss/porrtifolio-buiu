@@ -21,15 +21,15 @@
   <meta property="og:image:alt" content="Cardoso Baterias — Bateria nova, instalação na hora">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="icon" href="assets/img/favicon.svg?v=1.1.0" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1.1.0">
+  <link rel="icon" href="assets/img/favicon.svg?v=1.2.0" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1.2.0">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,800;1,800&family=Inter:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed&family=Barlow:wght@400;600&display=swap">
 
   <!-- VERSÃO: ao atualizar CSS/JS/conteúdo, aumente o número em ?v= (ex.: 1.0.1) -->
-  <link rel="stylesheet" href="css/estilo.css?v=1.1.0">
+  <link rel="stylesheet" href="css/estilo.css?v=1.2.0">
 </head>
 <body>
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
@@ -53,7 +53,7 @@
           <li><a href="#contato">Contato</a></li>
           <li data-loja-virtual hidden><a href="#" target="_blank" rel="noopener">Loja virtual</a></li>
         </ul>
-        <a class="btn btn--whats btn--pequeno topo__cta" data-whats href="https://wa.me/5511962986718" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn btn--linha btn--pequeno topo__cta" data-whats href="https://wa.me/5511962986718" target="_blank" rel="noopener">WhatsApp</a>
       </nav>
     </div>
   </header>
@@ -71,27 +71,22 @@
           </h1>
           <p class="hero__sub" data-c="hero.texto"></p>
           <div class="hero__acoes">
-            <a class="btn btn--whats btn--grande" data-whats data-c="hero.botao" href="https://wa.me/5511962986718" target="_blank" rel="noopener">Pedir orçamento no WhatsApp</a>
-            <a class="btn btn--contorno" href="#lojas">Ver lojas</a>
+            <a class="btn btn--giallo btn--grande btn--seta" data-whats data-c="hero.botao" href="https://wa.me/5511962986718" target="_blank" rel="noopener">Pedir orçamento no WhatsApp</a>
+            <a class="btn btn--fantasma btn--seta" href="#lojas">Ver lojas</a>
           </div>
           <a class="nota-google" id="nota-google" href="#" target="_blank" rel="noopener"></a>
         </div>
         <div class="hero__arte" aria-hidden="true">
-          <svg viewBox="0 0 320 240" class="bateria-svg">
-            <rect x="62" y="20" width="52" height="26" rx="4" fill="#2a2b30"/>
-            <rect x="206" y="20" width="52" height="26" rx="4" fill="#2a2b30"/>
-            <rect x="74" y="12" width="28" height="14" rx="3" fill="#c9cbd1"/>
-            <rect x="218" y="12" width="28" height="14" rx="3" fill="#c9cbd1"/>
-            <rect x="20" y="42" width="280" height="178" rx="16" fill="#17181b" stroke="#ffc400" stroke-width="5"/>
-            <rect x="20" y="42" width="280" height="40" rx="12" fill="#ffc400"/>
-            <rect x="20" y="66" width="280" height="16" fill="#ffc400"/>
-            <text x="88" y="72" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="30" fill="#0b0b0c">+</text>
-            <text x="232" y="72" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="30" fill="#0b0b0c">−</text>
-            <path d="M172 98 128 160h30l-12 46 46-66h-31l11-42z" fill="#ffc400"/>
+          <svg viewBox="0 0 320 240" class="bateria-svg" fill="none" stroke="#ffffff" stroke-width="2">
+            <rect x="66" y="18" width="44" height="22"/>
+            <rect x="210" y="18" width="44" height="22"/>
+            <rect x="20" y="40" width="280" height="180"/>
+            <line x1="20" y1="80" x2="300" y2="80" stroke="#7d7d7d" stroke-width="1"/>
+            <path d="M80 60h16M88 52v16M224 60h16"/>
+            <path d="M172 100 132 158h28l-10 42 42-60h-28l10-40z"/>
           </svg>
         </div>
       </div>
-      <div class="faixa-zebra" aria-hidden="true"></div>
     </section>
 
     <!-- 2. SOBRE -->
@@ -110,14 +105,19 @@
     <!-- 3. SERVIÇOS -->
     <section class="secao secao--escura" id="servicos" aria-labelledby="servicos-titulo">
       <div class="container">
-        <p class="sobretitulo">O que fazemos</p>
-        <h2 id="servicos-titulo" class="titulo">Serviços</h2>
+        <div class="cabecalho-secao">
+          <div>
+            <p class="sobretitulo">O que fazemos</p>
+            <h2 id="servicos-titulo" class="titulo">Serviços</h2>
+          </div>
+          <a class="btn btn--fantasma btn--seta" data-whats href="https://wa.me/5511962986718" target="_blank" rel="noopener">Pedir orçamento</a>
+        </div>
         <ul class="servicos" id="lista-servicos"></ul>
       </div>
     </section>
 
     <!-- 4. MARCAS -->
-    <section class="secao secao--amarela" id="marcas" aria-labelledby="marcas-titulo">
+    <section class="secao secao--cinza" id="marcas" aria-labelledby="marcas-titulo">
       <div class="container">
         <h2 id="marcas-titulo" class="titulo" data-c="marcas.titulo">Marcas que trabalhamos</h2>
         <p class="lead" data-c="marcas.texto"></p>
@@ -127,7 +127,7 @@
     </section>
 
     <!-- 5. PORTFÓLIO -->
-    <section class="secao secao--cinza" id="trabalhos" aria-labelledby="trabalhos-titulo">
+    <section class="secao secao--clara" id="trabalhos" aria-labelledby="trabalhos-titulo">
       <div class="container">
         <p class="sobretitulo">Portfólio</p>
         <h2 id="trabalhos-titulo" class="titulo" data-c="portfolio.titulo">Trabalhos realizados</h2>
@@ -140,24 +140,34 @@
     <!-- 6. LOJAS -->
     <section class="secao secao--escura" id="lojas" aria-labelledby="lojas-titulo">
       <div class="container">
-        <p class="sobretitulo">Nossas lojas</p>
-        <h2 id="lojas-titulo" class="titulo">Escolha a unidade mais perto</h2>
+        <div class="cabecalho-secao">
+          <div>
+            <p class="sobretitulo">Nossas lojas</p>
+            <h2 id="lojas-titulo" class="titulo">Escolha a unidade mais perto</h2>
+          </div>
+          <a class="btn btn--fantasma btn--seta" data-maps href="#" target="_blank" rel="noopener">Ver no Google Maps</a>
+        </div>
         <p class="lead lead--claro" id="lojas-resumo"></p>
         <ul class="lojas" id="lista-lojas"></ul>
       </div>
     </section>
 
     <!-- 7. DEPOIMENTOS -->
-    <section class="secao secao--clara" id="depoimentos" aria-labelledby="depoimentos-titulo">
+    <section class="secao secao--cinza" id="depoimentos" aria-labelledby="depoimentos-titulo">
       <div class="container">
-        <p class="sobretitulo">Quem já foi atendido</p>
-        <h2 id="depoimentos-titulo" class="titulo">O que dizem no Google</h2>
+        <div class="cabecalho-secao">
+          <div>
+            <p class="sobretitulo">Quem já foi atendido</p>
+            <h2 id="depoimentos-titulo" class="titulo">O que dizem no Google</h2>
+          </div>
+          <a class="btn btn--fantasma btn--seta" data-maps href="#" target="_blank" rel="noopener">Ver avaliações no Google</a>
+        </div>
         <ul class="depoimentos" id="lista-depoimentos"></ul>
       </div>
     </section>
 
     <!-- 8. FAQ -->
-    <section class="secao secao--cinza" id="perguntas" aria-labelledby="faq-titulo">
+    <section class="secao secao--clara" id="perguntas" aria-labelledby="faq-titulo">
       <div class="container container--estreito">
         <p class="sobretitulo">Dúvidas</p>
         <h2 id="faq-titulo" class="titulo">Perguntas frequentes</h2>
@@ -172,7 +182,7 @@
           <p class="sobretitulo">Contato</p>
           <h2 id="contato-titulo" class="titulo" data-c="contato.titulo">Fale com a gente</h2>
           <p class="lead lead--claro" data-c="contato.texto"></p>
-          <a class="btn btn--whats btn--grande" data-whats href="https://wa.me/5511962986718" target="_blank" rel="noopener">
+          <a class="btn btn--giallo btn--grande btn--seta" data-whats href="https://wa.me/5511962986718" target="_blank" rel="noopener">
             WhatsApp <span id="whats-exibicao">(11) 96298-6718</span>
           </a>
           <p class="contato__area" id="area-atendida"></p>
@@ -184,7 +194,6 @@
 
   <!-- 10. RODAPÉ -->
   <footer class="rodape">
-    <div class="faixa-zebra" aria-hidden="true"></div>
     <div class="container rodape__grade">
       <div>
         <img data-logo="escuro" src="assets/img/logo-fundo-escuro.png" alt="Cardoso Baterias" width="132" height="42" loading="lazy">
@@ -237,7 +246,7 @@
     <p class="noscript">Para ver todo o conteúdo, ative o JavaScript. Orçamento pelo WhatsApp: <a href="https://wa.me/5511962986718">(11) 96298-6718</a>.</p>
   </noscript>
 
-  <script src="js/conteudo.js?v=1.1.0"></script>
-  <script src="js/app.js?v=1.1.0"></script>
+  <script src="js/conteudo.js?v=1.2.0"></script>
+  <script src="js/app.js?v=1.2.0"></script>
 </body>
 </html>

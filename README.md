@@ -88,6 +88,11 @@ A imagem enviada é pequena (140×59 px). Se tiver o arquivo em resolução maio
 As marcas aparecem em cartões só com o nome, sem logotipos. Se um fabricante autorizar o uso da logo, salve
 a imagem em `assets/marcas/`, preencha `imagem` e mude `imagemAutorizada` para `true`.
 
+## Visual
+Estilo “showroom”: fundos escuros (#202020) alternando com seções brancas e cinza-claro, cantos retos,
+sem sombras, linhas finas como divisórias e títulos em caixa alta (fonte Barlow Condensed). O amarelo
+(#ffc000) fica reservado ao botão principal de cada tela. As cores ficam no começo de `css/estilo.css`.
+
 ## 4. O que já está pronto
 - 10 seções: topo com nota no Google, sobre, serviços, marcas, portfólio com filtros, lightbox e
   antes/depois, lojas, depoimentos, perguntas frequentes, contato e rodapé.
