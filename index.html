@@ -21,15 +21,15 @@
   <meta property="og:image:alt" content="Cardoso Baterias — Bateria nova, instalação na hora">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="icon" href="assets/img/favicon.svg?v=1.5.0" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1.5.0">
+  <link rel="icon" href="assets/img/favicon.svg?v=1.6.0" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1.6.0">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap">
 
   <!-- VERSÃO: ao atualizar CSS/JS/conteúdo, aumente o número em ?v= (ex.: 1.0.1) -->
-  <link rel="stylesheet" href="css/estilo.css?v=1.5.0">
+  <link rel="stylesheet" href="css/estilo.css?v=1.6.0">
 </head>
 <body>
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
@@ -77,15 +77,34 @@
           <a class="nota-google" id="nota-google" href="#" target="_blank" rel="noopener"></a>
         </div>
         <div class="hero__arte" aria-hidden="true">
-          <svg class="ilustra ilustra--bateria" viewBox="0 0 260 190">
+          <svg class="ilustra ilustra--raio" viewBox="0 0 420 680">
             <defs>
-              <linearGradient id="brasa" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#ffc000"/><stop offset="1" stop-color="#ff7a00"/></linearGradient>
+              <linearGradient id="raio-borda" x1="0" y1="0" x2=".35" y2="1">
+                <stop offset="0" stop-color="#fff6c8"/><stop offset=".3" stop-color="#ffc000"/><stop offset=".7" stop-color="#ff7a00"/><stop offset="1" stop-color="#ff3d00"/>
+              </linearGradient>
+              <radialGradient id="raio-vidro" cx=".45" cy=".45" r=".7">
+                <stop offset="0" stop-color="#3a1a06"/><stop offset=".6" stop-color="#1c0c03"/><stop offset="1" stop-color="#0f0703"/>
+              </radialGradient>
+              <linearGradient id="raio-faceta" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#ffffff" stop-opacity=".22"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+              </linearGradient>
+              <filter id="raio-brilho" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="10" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="raio-nevoa" filterUnits="userSpaceOnUse" x="-200" y="-200" width="820" height="1100"><feGaussianBlur stdDeviation="28"/></filter>
             </defs>
-            <rect x="48" y="6" width="44" height="26" rx="8" fill="#3f3b34"/>
-            <rect x="168" y="6" width="44" height="26" rx="8" fill="#3f3b34"/>
-            <rect x="6.5" y="26.5" width="247" height="157" rx="30" fill="#1d1a15" stroke="rgba(255,255,255,.14)"/>
-            <path d="M54 49h22M65 38v22M184 49h22" stroke="#a29d93" stroke-width="6" stroke-linecap="round"/>
-            <path d="M144 70 98 134h32l-12 46 52-72h-32l12-38z" fill="url(#brasa)"/>
+            <ellipse class="raio__halo" cx="210" cy="340" rx="150" ry="280" fill="#ff8a00" opacity=".22" filter="url(#raio-nevoa)"/>
+            <ellipse cx="150" cy="640" rx="140" ry="22" fill="#ff7a00" opacity=".45" filter="url(#raio-nevoa)"/>
+            <g class="raio__corpo">
+              <path d="M262 18 L84 346 L196 346 L128 612 L338 236 L222 236 L306 18 Z" transform="translate(17.6 12.8)" fill="#140802"/><path d="M262 18 L84 346 L196 346 L128 612 L338 236 L222 236 L306 18 Z" transform="translate(15.4 11.2)" fill="#1c0b02"/><path d="M262 18 L84 346 L196 346 L128 612 L338 236 L222 236 L306 18 Z" transform="translate(13.2 9.6)" fill="#250e02"/><path d="M262 18 L84 346 L196 346 L128 612 L338 236 L222 236 L306 18 Z" transform="translate(11.0 8.0)" fill="#2e1103"/><path d="M262 18 L84 346 L196 346 L128 612 L338 236 L222 236 L306 18 Z" transform="translate(8.8 6.4)" fill="#381403"/><path d="M262 18 L84 346 L196 346 L128 612 L338 236 L222 236 L306 18 Z" transform="translate(6.6 4.8)" fill="#431804"/><path d="M262 18 L84 346 L196 346 L128 612 L338 236 L222 236 L306 18 Z" transform="translate(4.4 3.2)" fill="#4f1c04"/><path d="M262 18 L84 346 L196 346 L128 612 L338 236 L222 236 L306 18 Z" transform="translate(2.2 1.6)" fill="#5c2105"/>
+              <path d="M262 18 L84 346 L196 346 L128 612 L338 236 L222 236 L306 18 Z" fill="url(#raio-vidro)"/>
+              <path d="M262 18 L84 346 L150 346 L276 60 Z" fill="url(#raio-faceta)"/>
+              <path d="M222 236 L338 236 L250 392 Z" fill="#ffffff" opacity=".06"/>
+              <path class="raio__borda" d="M262 18 L84 346 L196 346 L128 612 L338 236 L222 236 L306 18 Z" fill="none" stroke="url(#raio-borda)" stroke-width="9" stroke-linejoin="round" filter="url(#raio-brilho)"/>
+              <path d="M262 18 L84 346 L196 346 L128 612 L338 236 L222 236 L306 18 Z" fill="none" stroke="#fff3c4" stroke-width="2" stroke-linejoin="round" opacity=".85"/>
+            </g>
+            <polyline class="raio__faisca" points="300,22 314,4 306,-2 324,-24 316,-30 334,-56" fill="none" stroke="#fff3c4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#raio-brilho)"/>
           </svg>
         </div>
       </div>
@@ -248,7 +267,7 @@
     <p class="noscript">Para ver todo o conteúdo, ative o JavaScript. Orçamento pelo WhatsApp: <a href="https://wa.me/5511962986718">(11) 96298-6718</a>.</p>
   </noscript>
 
-  <script src="js/conteudo.js?v=1.5.0"></script>
-  <script src="js/app.js?v=1.5.0"></script>
+  <script src="js/conteudo.js?v=1.6.0"></script>
+  <script src="js/app.js?v=1.6.0"></script>
 </body>
 </html>
