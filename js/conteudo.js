@@ -36,12 +36,12 @@ window.CONTEUDO = {
   },
 
   /* --------------------------- LOGO --------------------------- */
-  // As logos abaixo são PROVISÓRIAS (feitas em texto). Para usar a logo
-  // oficial: salve o PNG original como assets/img/logo.png e gere a versão
-  // para fundo escuro com ferramentas/logo-fundo-escuro.html.
+  // Logo oficial. O arquivo original enviado está em assets/img/logo-original.png.
+  // Para trocar por uma versão em melhor resolução, gere a de fundo escuro com
+  // ferramentas/logo-fundo-escuro.html e substitua os arquivos abaixo.
   logo: {
-    fundoClaro: "assets/img/logo.svg",          // ex.: "assets/img/logo.png"
-    fundoEscuro: "assets/img/logo-escuro.svg",  // ex.: "assets/img/logo-fundo-escuro.png"
+    fundoClaro: "assets/img/logo.png",
+    fundoEscuro: "assets/img/logo-fundo-escuro.png",
     alt: "Cardoso Baterias"
   },
 

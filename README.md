@@ -56,7 +56,7 @@ topo, sobre, serviços, marcas, portfólio, lojas, depoimentos, perguntas freque
   `<meta name="description">`, porque o Google e o WhatsApp leem essas tags sem executar JavaScript.
 
 ### Depois de qualquer alteração: atualize a versão
-No `index.html`, aumente o número em `?v=1.0.0` (ex.: para `?v=1.0.1`) **em todas as linhas**
+No `index.html`, aumente o número em `?v=1.1.0` (ex.: para `?v=1.1.1`) **em todas as linhas**
 (`estilo.css`, `conteudo.js`, `app.js` e ícones). Assim, quem já visitou o site não continua vendo a
 versão antiga guardada em cache.
 
@@ -77,13 +77,12 @@ Foto de fundo do topo (opcional): `hero.imagem: "assets/fotos/hero.jpg"`.
 > Use apenas fotos próprias ou autorizadas. Não use fotos do Google Maps nem de terceiros.
 
 ### Logo
-As logos em `assets/img/logo.svg` e `logo-escuro.svg` são **provisórias** (feitas em texto). Para usar
-a logo oficial:
-1. Salve o PNG original (fundo branco) como `assets/img/logo.png`.
-2. Abra `ferramentas/logo-fundo-escuro.html` no navegador, escolha o PNG e baixe
-   `logo-fundo-escuro.png`, que sai com letras brancas e fundo transparente. Salve o arquivo em `assets/img/`.
-3. No `js/conteudo.js`, bloco `logo`, use `fundoClaro: "assets/img/logo.png"` e
-   `fundoEscuro: "assets/img/logo-fundo-escuro.png"`.
+A logo oficial está em `assets/img/logo.png` (fundo transparente) e `assets/img/logo-fundo-escuro.png`
+(letras brancas, para o cabeçalho e o rodapé). As duas foram geradas a partir de `assets/img/logo-original.png`.
+A imagem enviada é pequena (140×59 px). Se tiver o arquivo em resolução maior (ideal: 600 px de largura ou mais):
+1. Abra `ferramentas/logo-fundo-escuro.html` no navegador, escolha o PNG e baixe `logo-fundo-escuro.png`.
+2. Substitua `assets/img/logo.png` (original) e `assets/img/logo-fundo-escuro.png` pelos arquivos novos.
+3. Aumente o `?v=` no `index.html`.
 
 ### Marcas (Moura, Heliar, Bosch, Zetta, Pioneiro)
 As marcas aparecem em cartões só com o nome, sem logotipos. Se um fabricante autorizar o uso da logo, salve
@@ -106,7 +105,7 @@ a imagem em `assets/marcas/`, preencha `imagem` e mude `imagemAutorizada` para `
 - instalações, testes de bateria/alternador, loja (fachada, estoque) e frota/utilitários;
 - pares de **antes e depois**;
 - (opcional) foto para o fundo do topo;
-- a **logo oficial em PNG**.
+- a **logo em resolução maior** (a atual tem só 140×59 px).
 
 **Dados “[a confirmar]”** em `js/conteudo.js`:
 - endereço completo e CEP das 3 lojas (Cipó: só há o trecho “R. Benedito Jandiro Soares / R. Manoel dos Santos”);
