@@ -183,7 +183,7 @@ main:focus { outline: none; }
 @media (min-width: 560px) { .hero__acoes .btn--primario { flex: 0 1 auto; } }
 
 /* ilustração: raio com bordas em brasa */
-.hero__arte { position: relative; width: min(78%, 300px); justify-self: center; margin-top: -8px; }
+.hero__arte { position: relative; width: min(90%, 360px); justify-self: center; margin-top: -24px; }
 .ilustra--raio { width: 100%; height: auto; overflow: visible; transform: rotate(6deg); }
 .raio__halo { animation: raio-pulsa 4s ease-in-out infinite; }
 .raio__faisca { animation: raio-faisca 2.6s steps(1) infinite; }
@@ -191,7 +191,7 @@ main:focus { outline: none; }
 @keyframes raio-faisca { 0%, 62%, 70%, 100% { opacity: 1; } 64%, 68% { opacity: 0; } }
 @media (min-width: 900px) {
   .hero__grade { grid-template-columns: 1.2fr .8fr; padding-top: var(--s80); padding-bottom: var(--s120); }
-  .hero__arte { justify-self: end; width: 120%; max-width: 520px; margin: -40px -22% -80px 0; }
+  .hero__arte { justify-self: end; width: 135%; max-width: 640px; margin: -80px -30% -120px 0; }
 }
 
 .nota-google {
