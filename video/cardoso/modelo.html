@@ -1,0 +1,1027 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vídeo Cardoso Baterias</title>
+<style>
+  @font-face { font-family: "Anton"; src: url({{ANTON}}) format("woff2"); font-weight: 400; }
+  @font-face { font-family: "Montserrat"; src: url({{MONT600}}) format("woff2"); font-weight: 600; }
+  @font-face { font-family: "Montserrat"; src: url({{MONT800}}) format("woff2"); font-weight: 800; }
+  :root { --fundo: #0e0918; --painel: #1a1624; --texto: #e9e6ee; --chama: #ff492c; --azul: #077ac7; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--fundo); color: var(--texto); font-family: "Montserrat", system-ui, sans-serif; }
+  body { display: flex; gap: 28px; align-items: center; justify-content: center; padding: 16px; flex-wrap: wrap; }
+  #tela { height: min(88vh, 960px); aspect-ratio: 9 / 16; max-width: 100%; border-radius: 18px; box-shadow: 0 20px 60px #000a; background: #000; }
+  .painel { max-width: 340px; display: flex; flex-direction: column; gap: 14px; }
+  h1 { font-family: "Anton", sans-serif; font-weight: 400; font-size: 34px; margin: 0; letter-spacing: .5px; }
+  p { margin: 0; line-height: 1.5; font-size: 15px; color: #c9c4d2; }
+  button { font: 800 17px "Montserrat", sans-serif; border: 0; border-radius: 12px; padding: 16px 18px; cursor: pointer; color: #fff; }
+  #baixar { background: linear-gradient(90deg, #ff492c, #ff8a1f); box-shadow: 0 8px 24px #ff492c55; }
+  #assistir { background: var(--painel); border: 1px solid #3e3a46; }
+  button:disabled { opacity: .5; cursor: wait; }
+  .barra { height: 10px; border-radius: 6px; background: #2c2834; overflow: hidden; }
+  .barra i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ff492c, #ffd23f, #2ad4e6); }
+  #status { min-height: 3em; }
+</style>
+</head>
+<body>
+<canvas id="tela" width="1080" height="1920" aria-label="Vídeo Cardoso Baterias"></canvas>
+<div class="painel">
+  <h1>Cardoso Baterias · vídeo 25s</h1>
+  <p>Clique em <strong>Baixar MP4</strong> e deixe esta aba aberta, sem minimizar, até terminar (cerca de 25 segundos). O vídeo baixa sozinho, com som.</p>
+  <button id="baixar">⬇ Baixar MP4</button>
+  <button id="assistir">▶ Assistir com som</button>
+  <div class="barra"><i id="progresso"></i></div>
+  <p id="status">Pronto.</p>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   CARDOSO BATERIAS — VÍDEO 25s (1080x1920)
+   Toda a imagem sai de render(t) e todo o som de agendarAudio().
+   ===================================================================== */
+const W = 1080, H = 1920, DUR = 25, FPS = 30;
+const C = {
+  fundo: "#0e0918", roxo: "#1d0f33", chama: "#ff492c", laranja: "#ff8a1f", amarelo: "#ffd23f",
+  azul: "#077ac7", ciano: "#2ad4e6", branco: "#ffffff", texto: "#d9d5df"
+};
+const canvas = document.getElementById("tela");
+const ctx = canvas.getContext("2d");
+
+/* ---------- utilidades ---------- */
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const eOutCubic = k => 1 - Math.pow(1 - k, 3);
+const eInCubic = k => k * k * k;
+const eInOut = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+const eOutExpo = k => k >= 1 ? 1 : 1 - Math.pow(2, -10 * k);
+const eOutBack = k => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+const eOutElastic = k => k === 0 || k === 1 ? k : Math.pow(2, -10 * k) * Math.sin((k * 10 - .75) * (2 * Math.PI / 3)) + 1;
+function hash(n) { n = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b); n ^= n >>> 13; n = Math.imul(n, 0xc2b2ae35); n ^= n >>> 16; return (n >>> 0) / 4294967296; }
+function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; }
+function rrect(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+
+/* Batida: 120 BPM = uma batida a cada 0,5s */
+const BEAT = 0.5;
+function batida(t) { // brilho que pulsa em cada batida
+  if (t < 3 || t >= 22.5) return 0;
+  return Math.exp(-((t - 3) % BEAT) * 9);
+}
+
+/* ---------- imagens ---------- */
+const LOGO = new Image(); LOGO.src = "{{LOGO}}";
+const RAIO = new Image(); RAIO.src = "{{RAIO}}";
+
+/* textura de granulado (gerada uma vez) */
+const grao = document.createElement("canvas"); grao.width = grao.height = 256;
+{
+  const g = grao.getContext("2d"), d = g.createImageData(256, 256), r = mulberry32(42);
+  for (let i = 0; i < d.data.length; i += 4) { const v = r() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  g.putImageData(d, 0, 0);
+}
+let padraoGrao = null;
+
+/* ---------- textos palavra por palavra ---------- */
+const cacheMedida = new Map();
+function medir(txt, fonte) {
+  const k = fonte + "|" + txt;
+  if (!cacheMedida.has(k)) { ctx.font = fonte; cacheMedida.set(k, ctx.measureText(txt).width); }
+  return cacheMedida.get(k);
+}
+function gradienteDestaque(x0, x1, tipo, t) {
+  const g = ctx.createLinearGradient(x0, 0, x1, 0);
+  const s = (Math.sin(t * 3) + 1) * .05;
+  if (tipo === "fogo") { g.addColorStop(0, C.chama); g.addColorStop(.55 + s, C.laranja); g.addColorStop(1, C.amarelo); }
+  else { g.addColorStop(0, C.ciano); g.addColorStop(.6 + s, "#8fdcff"); g.addColorStop(1, "#4aa3ff"); }
+  return g;
+}
+/* linhas: [{ y, tam, fonte, palavras: [[texto, tempo, estilo]] }]
+   estilo: undefined (branco) | "fogo" | "eletrico" | "glitch" */
+function palavras(linhas, t, opc = {}) {
+  const maxW = opc.maxW || 840;
+  for (const L of linhas) {
+    let tam = L.tam;
+    const familia = L.fonte || "Anton";
+    const peso = L.peso || 400;
+    const fonteDe = s => `${peso} ${s}px "${familia}"`;
+    const esp = () => medir(" ", fonteDe(tam)) * (L.esp || 1);
+    let total;
+    for (;;) {
+      total = L.palavras.reduce((s, p) => s + medir(p[0], fonteDe(tam)), 0) + esp() * (L.palavras.length - 1);
+      if (total <= maxW || tam < 30) break;
+      tam -= 4;
+    }
+    const fonte = fonteDe(tam);
+    let x = W / 2 - total / 2;
+    for (const [txt, tw, estilo] of L.palavras) {
+      const w = medir(txt, fonte);
+      const a = prog(t, tw, tw + (estilo ? .45 : .35));
+      if (t >= tw) desenharPalavra(txt, x, w, L.y, fonte, a, estilo, t, tw, L.cor, L.risco !== false);
+      x += w + esp();
+    }
+  }
+}
+function desenharPalavra(txt, x, w, y, fonte, a, estilo, t, tw, cor, comRisco) {
+  const e = eOutExpo(a);
+  const cx = x + w / 2;
+  ctx.save();
+  ctx.font = fonte; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  let esc = lerp(estilo ? 1.7 : 1.25, 1, estilo ? eOutBack(a) : e);
+  // destaque continua vivo: pulsa a cada batida
+  if (estilo && a >= 1) esc *= 1 + batida(t) * .035;
+  const dy = (1 - e) * (estilo ? 0 : 70);
+  ctx.globalAlpha *= clamp(a * 2.2);
+  ctx.translate(cx, y + dy); ctx.scale(esc, esc);
+  const desfoque = (1 - e) * 14;
+  if (desfoque > .6) ctx.filter = `blur(${desfoque.toFixed(1)}px)`;
+  if (estilo === "glitch") {
+    const k = Math.floor(t * 24), j = (hash(k) - .5) * 16 * (1 - prog(t, tw + .2, tw + 1.2) * .6);
+    ctx.globalCompositeOperation = "lighter";
+    ctx.fillStyle = rgba(C.ciano, .75); ctx.fillText(txt, -8 + j, hash(k + 7) * 6 - 3);
+    ctx.fillStyle = rgba(C.chama, .9); ctx.fillText(txt, 8 - j, hash(k + 3) * 6 - 3);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.shadowColor = C.chama; ctx.shadowBlur = 50;
+    ctx.fillStyle = gradienteDestaque(-w / 2, w / 2, "fogo", t);
+    ctx.fillText(txt, j * .3, 0);
+  } else if (estilo) {
+    ctx.shadowColor = estilo === "fogo" ? C.chama : C.ciano;
+    ctx.shadowBlur = 40 + batida(t) * 30;
+    ctx.fillStyle = gradienteDestaque(-w / 2, w / 2, estilo, t);
+    ctx.fillText(txt, 0, 0);
+    ctx.shadowBlur = 0; ctx.fillText(txt, 0, 0);
+    // risco de energia sob a palavra
+    const r = eOutCubic(prog(t, tw + .2, tw + .6));
+    if (r > 0 && comRisco && txt.length > 3) {
+      ctx.fillStyle = gradienteDestaque(-w / 2, w / 2, estilo, t);
+      ctx.fillRect(-w / 2, parseFloat(fonte.split(" ")[1]) * .46, w * r, 8);
+    }
+  } else {
+    ctx.shadowColor = "rgba(0,0,0,.55)"; ctx.shadowBlur = 24; ctx.shadowOffsetY = 6;
+    ctx.fillStyle = cor || C.branco;
+    ctx.fillText(txt, 0, 0);
+  }
+  ctx.restore();
+}
+
+/* ---------- raios (descarga elétrica) ---------- */
+function raioEletrico(x1, y1, x2, y2, semente, largura, alfa, cor = C.ciano) {
+  const r = mulberry32(semente);
+  let pts = [[x1, y1], [x2, y2]];
+  let desl = Math.hypot(x2 - x1, y2 - y1) * .22;
+  for (let n = 0; n < 6; n++) {
+    const novo = [pts[0]];
+    for (let i = 1; i < pts.length; i++) {
+      const [ax, ay] = pts[i - 1], [bx, by] = pts[i];
+      const mx = (ax + bx) / 2, my = (ay + by) / 2, nx = -(by - ay), ny = bx - ax, l = Math.hypot(nx, ny) || 1;
+      const d = (r() - .5) * desl;
+      novo.push([mx + nx / l * d, my + ny / l * d], pts[i]);
+    }
+    pts = novo; desl *= .55;
+  }
+  ctx.save();
+  ctx.globalAlpha = alfa; ctx.globalCompositeOperation = "lighter";
+  ctx.lineJoin = ctx.lineCap = "round";
+  for (const [lw, c, b] of [[largura * 4, cor, 40], [largura, "#ffffff", 10]]) {
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (const p of pts) ctx.lineTo(p[0], p[1]);
+    ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.shadowColor = cor; ctx.shadowBlur = b; ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* ---------- faíscas (determinísticas) ---------- */
+const EXPLOSOES = [];
+function explosao(t0, x, y, n, vel, cores) { EXPLOSOES.push({ t0, x, y, n, vel, cores, s: EXPLOSOES.length * 977 + 13 }); }
+explosao(3.0, 540, 640, 110, 1500, [C.amarelo, C.laranja, C.chama, C.branco]);
+explosao(6.5, 540, 900, 70, 1200, [C.ciano, C.branco, C.laranja]);
+explosao(19.5, 540, 1000, 160, 1800, [C.ciano, C.amarelo, C.branco, C.chama]);
+explosao(22.55, 540, 640, 80, 1100, [C.amarelo, C.ciano, C.branco]);
+// a cada batida, faíscas saem da cabeça da barra de carga
+for (let b = 3.5; b < 22.5; b += BEAT) explosao(b, null, null, 9, 520, [C.amarelo, C.ciano, C.branco]);
+// raio da cena 2 solta faíscas a cada batida
+for (let b = 3.5; b < 6.4; b += BEAT) explosao(b, 600, 380, 14, 700, [C.amarelo, C.laranja, C.branco]);
+
+function desenharFaiscas(t) {
+  ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+  for (const E of EXPLOSOES) {
+    const age = t - E.t0;
+    if (age < 0 || age > 1.3) continue;
+    let ox = E.x, oy = E.y;
+    if (ox === null) { const c = cabecaBarra(E.t0); ox = c.x; oy = c.y; }
+    for (let i = 0; i < E.n; i++) {
+      const h1 = hash(E.s + i * 3), h2 = hash(E.s + i * 3 + 1), h3 = hash(E.s + i * 3 + 2);
+      const vida = .45 + h3 * .8;
+      if (age > vida) continue;
+      const ang = h1 * Math.PI * 2, v = E.vel * (.25 + h2 * .75);
+      const k = 1 - age / vida, arrasto = (1 - Math.exp(-age * 3)) / 3;
+      const x = ox + Math.cos(ang) * v * arrasto, y = oy + Math.sin(ang) * v * arrasto + 600 * age * age;
+      const vx = Math.cos(ang) * v * Math.exp(-age * 3), vy = Math.sin(ang) * v * Math.exp(-age * 3) + 1200 * age;
+      ctx.strokeStyle = E.cores[i % E.cores.length];
+      ctx.globalAlpha = k;
+      ctx.lineWidth = 2 + h3 * 4 * k;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - vx * .025, y - vy * .025); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+/* brasas subindo o vídeo todo */
+function desenharBrasas(t, forca) {
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 70; i++) {
+    const h1 = hash(i * 11 + 1), h2 = hash(i * 11 + 2), h3 = hash(i * 11 + 3);
+    const vel = 50 + h2 * 140, ciclo = H * 1.2;
+    const y = H + 60 - ((h1 * ciclo + vel * t) % ciclo);
+    const x = h3 * W + Math.sin(t * .9 + i) * 34;
+    const piscar = .5 + .5 * Math.sin(t * (4 + h2 * 6) + i);
+    const tam = 2 + h1 * 4;
+    ctx.globalAlpha = forca * (.25 + .6 * piscar);
+    ctx.fillStyle = i % 3 === 0 ? C.ciano : (i % 3 === 1 ? C.laranja : C.amarelo);
+    ctx.beginPath(); ctx.arc(x, y, tam, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+/* ---------- fundo: degradê + luzes desfocadas ---------- */
+function fundo(t) {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, "#150b26"); g.addColorStop(.55, C.fundo); g.addColorStop(1, "#07040d");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const cena1 = t < 3;
+  const b = batida(t);
+  const piscaAlerta = cena1 ? Math.exp(-(t % BEAT) * 6) : 0;
+  const luzes = [
+    { c: C.chama, x: .25 + .2 * Math.sin(t * .35), y: .25 + .1 * Math.cos(t * .4), r: 820, a: cena1 ? .18 + piscaAlerta * .3 : .42 },
+    { c: C.azul, x: .8 + .15 * Math.sin(t * .3 + 2), y: .55 + .15 * Math.sin(t * .25), r: 900, a: cena1 ? 0 : .5 },
+    { c: C.ciano, x: .5 + .3 * Math.sin(t * .22 + 4), y: .85 + .05 * Math.cos(t * .5), r: 650, a: cena1 ? 0 : .25 },
+    { c: C.laranja, x: .7 + .2 * Math.cos(t * .28), y: .12 + .08 * Math.sin(t * .6), r: 600, a: cena1 ? .05 : .28 }
+  ];
+  ctx.save(); ctx.globalCompositeOperation = "screen";
+  for (const L of luzes) {
+    if (L.a <= 0) continue;
+    const a = L.a * (1 + b * .35) * (t < 3.2 && !cena1 ? prog(t, 3, 3.2) : 1);
+    const rg = ctx.createRadialGradient(L.x * W, L.y * H, 0, L.x * W, L.y * H, L.r);
+    rg.addColorStop(0, rgba(L.c, a)); rg.addColorStop(.45, rgba(L.c, a * .35)); rg.addColorStop(1, rgba(L.c, 0));
+    ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+  }
+  ctx.restore();
+  // grade de energia em perspectiva no chão, bem sutil
+  if (!cena1) {
+    ctx.save(); ctx.globalAlpha = .07 + b * .05; ctx.strokeStyle = C.ciano; ctx.lineWidth = 2;
+    const hz = 1250;
+    for (let i = -8; i <= 8; i++) { ctx.beginPath(); ctx.moveTo(W / 2 + i * 40, hz); ctx.lineTo(W / 2 + i * 260, H); ctx.stroke(); }
+    for (let i = 0; i < 9; i++) { const k = ((i + (t * 1.2) % 1) / 9); const y = hz + Math.pow(k, 2) * (H - hz); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    ctx.restore();
+  }
+}
+function acabamento(t) {
+  // vinheta
+  const v = ctx.createRadialGradient(W / 2, H * .45, H * .25, W / 2, H * .5, H * .78);
+  v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,.62)");
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  // granulado de filme (muda a cada quadro)
+  if (!padraoGrao) padraoGrao = ctx.createPattern(grao, "repeat");
+  const q = Math.floor(t * FPS);
+  ctx.save(); ctx.globalAlpha = .07; ctx.globalCompositeOperation = "overlay";
+  ctx.translate(-hash(q) * 256, -hash(q + 999) * 256); ctx.scale(1.5, 1.5);
+  ctx.fillStyle = padraoGrao; ctx.fillRect(0, 0, W + 512, H + 512);
+  ctx.restore();
+}
+
+/* ---------- elemento fixo: barra de carga ---------- */
+const BX = 200, BY = 1500, BW = 660, BH = 62;
+const CARGA = [[0, .03], [2.95, .03], [3.2, .30], [6.45, .30], [6.8, .45], [10.45, .45], [10.75, .55], [12.75, .55], [13.05, .65], [14.95, .65], [15.25, .75], [17.0, .75], [19.45, .96], [19.6, 1], [25, 1]];
+function carga(t) {
+  for (let i = 1; i < CARGA.length; i++) {
+    const [t0, v0] = CARGA[i - 1], [t1, v1] = CARGA[i];
+    if (t <= t1) return lerp(v0, v1, eOutCubic(prog(t, t0, t1)));
+  }
+  return 1;
+}
+function cabecaBarra(t) { return { x: BX + 8 + (BW - 16) * carga(t), y: BY + BH / 2 }; }
+function barraCarga(t) {
+  const nivel = carga(t), b = batida(t);
+  const fraca = t < 3, cheia = t >= 19.6;
+  const entrada = eOutCubic(prog(t, 0.05, .5));
+  ctx.save();
+  ctx.globalAlpha = entrada;
+  ctx.translate(0, (1 - entrada) * 40);
+  // rótulos
+  ctx.textBaseline = "alphabetic";
+  ctx.font = '800 30px "Montserrat"'; ctx.textAlign = "left"; ctx.letterSpacing = "4px";
+  const pisca = fraca ? (Math.exp(-(t % BEAT) * 5) > .35 ? 1 : .35) : 1;
+  ctx.fillStyle = fraca ? rgba(C.chama, pisca) : (cheia ? C.ciano : C.texto);
+  ctx.fillText(fraca ? "BATERIA FRACA" : (cheia ? "CARREGADO ⚡" : "CARREGANDO…"), BX, BY - 22);
+  ctx.letterSpacing = "0px";
+  ctx.font = '400 54px "Anton"'; ctx.textAlign = "right";
+  ctx.fillStyle = fraca ? rgba(C.chama, pisca) : C.branco;
+  if (cheia) { ctx.shadowColor = C.ciano; ctx.shadowBlur = 30; }
+  ctx.fillText(Math.round(nivel * 100) + "%", BX + BW, BY - 18);
+  ctx.shadowBlur = 0;
+  // corpo da bateria
+  rrect(BX, BY, BW, BH, 18);
+  ctx.fillStyle = "rgba(255,255,255,.06)"; ctx.fill();
+  ctx.lineWidth = 4; ctx.strokeStyle = fraca ? rgba(C.chama, .5 + pisca * .5) : "rgba(255,255,255,.55)"; ctx.stroke();
+  rrect(BX + BW + 4, BY + 16, 16, BH - 32, 5); ctx.fillStyle = ctx.strokeStyle; ctx.fill();
+  // + e − como na logo
+  ctx.font = '800 50px "Montserrat"'; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillStyle = C.ciano; ctx.fillText("+", BX - 46, BY + BH / 2 + 2);
+  ctx.fillStyle = C.chama; ctx.fillText("−", BX + BW + 62, BY + BH / 2 + 2);
+  // preenchimento
+  const fw = (BW - 16) * nivel;
+  ctx.save();
+  rrect(BX + 8, BY + 8, Math.max(fw, 4), BH - 16, 11); ctx.clip();
+  const g = ctx.createLinearGradient(BX, 0, BX + BW, 0);
+  if (fraca) { g.addColorStop(0, C.chama); g.addColorStop(1, C.chama); }
+  else { g.addColorStop(0, C.chama); g.addColorStop(.4, C.laranja); g.addColorStop(.7, C.amarelo); g.addColorStop(1, C.ciano); }
+  ctx.fillStyle = g; ctx.globalAlpha = fraca ? pisca : 1;
+  ctx.fillRect(BX, BY, BW, BH);
+  // listras andando (sempre em movimento)
+  ctx.globalAlpha = .18; ctx.fillStyle = "#fff";
+  const off = (t * 120) % 40;
+  for (let x = BX - 80 + off; x < BX + BW; x += 40) { ctx.beginPath(); ctx.moveTo(x, BY + BH); ctx.lineTo(x + 18, BY + BH); ctx.lineTo(x + 48, BY); ctx.lineTo(x + 30, BY); ctx.fill(); }
+  // pulso de luz correndo a cada batida
+  if (!fraca) {
+    const fase = ((t - 3) % BEAT) / BEAT;
+    const px = BX + 8 + fw * eOutCubic(fase);
+    const pg = ctx.createLinearGradient(px - 90, 0, px + 20, 0);
+    pg.addColorStop(0, "rgba(255,255,255,0)"); pg.addColorStop(1, "rgba(255,255,255,.9)");
+    ctx.globalAlpha = .65 * (1 - fase); ctx.fillStyle = pg; ctx.fillRect(px - 90, BY, 110, BH);
+  }
+  ctx.restore();
+  // brilho na cabeça da carga
+  const cab = cabecaBarra(t);
+  ctx.globalCompositeOperation = "lighter";
+  const rg = ctx.createRadialGradient(cab.x, cab.y, 0, cab.x, cab.y, 70 + b * 40);
+  rg.addColorStop(0, rgba(fraca ? C.chama : C.amarelo, .8)); rg.addColorStop(1, rgba(C.chama, 0));
+  ctx.fillStyle = rg; ctx.globalAlpha = fraca ? pisca * .6 : .55 + b * .45;
+  ctx.fillRect(cab.x - 120, cab.y - 120, 240, 240);
+  if (cheia) { // aura de bateria cheia
+    ctx.globalAlpha = .35 + b * .4; ctx.shadowColor = C.ciano; ctx.shadowBlur = 40;
+    ctx.strokeStyle = C.ciano; ctx.lineWidth = 3; rrect(BX - 6, BY - 6, BW + 12, BH + 12, 22); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* ---------- ícones desenhados ---------- */
+function iconeBateriaAlerta(x, y, s, alfa) { // luz do painel do carro
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.globalAlpha = alfa;
+  ctx.strokeStyle = C.chama; ctx.fillStyle = C.chama; ctx.lineWidth = 16; ctx.lineJoin = "round";
+  ctx.shadowColor = C.chama; ctx.shadowBlur = 60;
+  rrect(-150, -80, 300, 190, 22); ctx.stroke();
+  ctx.fillRect(-110, -112, 56, 32); ctx.fillRect(54, -112, 56, 32);
+  ctx.lineWidth = 14; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(-108, 15); ctx.lineTo(-52, 15); ctx.moveTo(-80, -13); ctx.lineTo(-80, 43); ctx.stroke(); // +
+  ctx.beginPath(); ctx.moveTo(52, 15); ctx.lineTo(108, 15); ctx.stroke(); // −
+  ctx.restore();
+}
+function poligonoRaio(s) { // forma de raio simples (ícones)
+  ctx.beginPath();
+  ctx.moveTo(10 * s, -60 * s); ctx.lineTo(-30 * s, 8 * s); ctx.lineTo(-2 * s, 8 * s); ctx.lineTo(-12 * s, 60 * s); ctx.lineTo(30 * s, -10 * s); ctx.lineTo(2 * s, -10 * s); ctx.closePath();
+}
+function bateriaGrande(x, y, t, t0) { // bateria de carro (cena 3)
+  ctx.save(); ctx.translate(x, y);
+  const corpo = ctx.createLinearGradient(0, -150, 0, 150);
+  corpo.addColorStop(0, "#3a3446"); corpo.addColorStop(1, "#16121e");
+  ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 50; ctx.shadowOffsetY = 30;
+  rrect(-250, -130, 500, 290, 34); ctx.fillStyle = corpo; ctx.fill();
+  ctx.shadowColor = "transparent";
+  ctx.lineWidth = 4; ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.stroke();
+  rrect(-250, -130, 500, 60, [34, 34, 0, 0]); ctx.fillStyle = "#4a4458"; ctx.fill();
+  // terminais
+  for (const [tx, cor, sinal] of [[-150, C.ciano, "+"], [150, C.chama, "−"]]) {
+    const g = ctx.createLinearGradient(tx - 34, 0, tx + 34, 0); g.addColorStop(0, cor); g.addColorStop(.5, "#fff"); g.addColorStop(1, cor);
+    rrect(tx - 34, -178, 68, 52, 10); ctx.fillStyle = g; ctx.fill();
+    ctx.font = '800 64px "Montserrat"'; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = cor;
+    ctx.fillText(sinal, tx, -98);
+  }
+  // raio no meio
+  ctx.save(); poligonoRaio(1.9);
+  const gr = ctx.createLinearGradient(0, -110, 0, 110); gr.addColorStop(0, C.amarelo); gr.addColorStop(1, C.chama);
+  ctx.fillStyle = gr; ctx.shadowColor = C.laranja; ctx.shadowBlur = 40 + batida(t) * 40; ctx.translate(0, 45); ctx.fill();
+  ctx.restore();
+  // reflexo de luz passando
+  const k = ((t - t0) % 2) / 2;
+  ctx.save(); rrect(-250, -130, 500, 290, 34); ctx.clip();
+  const rx = lerp(-500, 500, eInOut(k));
+  const rg = ctx.createLinearGradient(rx - 80, 0, rx + 80, 0);
+  rg.addColorStop(0, "rgba(255,255,255,0)"); rg.addColorStop(.5, "rgba(255,255,255,.22)"); rg.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = rg; ctx.transform(1, 0, -.4, 1, 0, 0); ctx.fillRect(rx - 120, -200, 240, 400);
+  ctx.restore();
+  ctx.restore();
+}
+function iconeTeste(t, a) { // medidor com ponteiro
+  ctx.save(); ctx.lineCap = "round";
+  const cores = [C.chama, C.laranja, C.amarelo, C.ciano];
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath(); ctx.arc(0, 30, 100, Math.PI * (1.08 + i * .21), Math.PI * (1.08 + i * .21 + .18));
+    ctx.strokeStyle = cores[i]; ctx.lineWidth = 22; ctx.stroke();
+  }
+  const ang = lerp(Math.PI * 1.1, Math.PI * 1.8, eOutElastic(prog(a, .3, 1.4))) + Math.sin(t * 9) * .02;
+  ctx.strokeStyle = "#fff"; ctx.lineWidth = 10;
+  ctx.beginPath(); ctx.moveTo(0, 30); ctx.lineTo(Math.cos(ang) * 80, 30 + Math.sin(ang) * 80); ctx.stroke();
+  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(0, 30, 16, 0, Math.PI * 2); ctx.fill();
+  ctx.font = '800 34px "Montserrat"'; ctx.textAlign = "center"; ctx.fillStyle = C.ciano; ctx.fillText("OK", 0, 92);
+  ctx.restore();
+}
+function iconeChave(t, a) { // chave de boca girando
+  ctx.save();
+  ctx.rotate(-.6 + Math.sin(t * 5) * .25 * (a > .4 ? 1 : 0) + (1 - eOutBack(clamp(a / .6))) * -1.2);
+  ctx.lineCap = "round"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 34;
+  ctx.beginPath(); ctx.moveTo(0, 95); ctx.lineTo(0, -30); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, -70, 52, Math.PI * .72, Math.PI * 2.28); ctx.lineWidth = 30; ctx.stroke();
+  ctx.restore();
+  // parafuso e faísca
+  ctx.save(); ctx.fillStyle = C.laranja; ctx.shadowColor = C.laranja; ctx.shadowBlur = 30;
+  ctx.translate(70, -70); poligonoRaio(.7); ctx.fill(); ctx.restore();
+}
+function iconeEntrega(t, a) { // caixa com linhas de velocidade
+  ctx.save();
+  const dx = Math.sin(t * 8) * 6, entra = (1 - eOutCubic(clamp(a / .6))) * -260;
+  ctx.translate(30 + dx + entra, Math.abs(Math.sin(t * 8)) * -6);
+  ctx.strokeStyle = "#fff"; ctx.lineWidth = 12; ctx.lineJoin = "round";
+  rrect(-70, -60, 140, 120, 14); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-70, -15); ctx.lineTo(70, -15); ctx.moveTo(0, -60); ctx.lineTo(0, -15); ctx.stroke();
+  ctx.lineCap = "round"; ctx.lineWidth = 12;
+  for (let i = 0; i < 3; i++) {
+    const k = (t * 3 + i * .33) % 1;
+    ctx.globalAlpha = 1 - k; ctx.strokeStyle = i === 1 ? C.ciano : C.laranja;
+    const y = -30 + i * 30, x0 = -100 - k * 40;
+    ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 - 70 + i * 15, y); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* ---------- cenas ---------- */
+function cena1(t) { // 0–3s: o gancho
+  const tremor = (t > .2 && t < 1.25) || (t > 1.45 && t < 2.55) ? 1 : 0;
+  ctx.save();
+  ctx.translate((hash(Math.floor(t * 40)) - .5) * 14 * tremor, (hash(Math.floor(t * 40) + 5) - .5) * 10 * tremor);
+  // luz do painel: liga com tremido e pisca no ritmo
+  const ligando = t < .35 ? (hash(Math.floor(t * 30)) > .4 ? 1 : .2) : 1;
+  const pisca = .3 + .7 * Math.exp(-(t % BEAT) * 4);
+  iconeBateriaAlerta(540, 560, 1 + Math.exp(-(t % BEAT) * 6) * .04, ligando * pisca);
+  palavras([
+    { y: 930, tam: 190, palavras: [["CARRO", .5], ["NÃO", 1.0]] },
+    { y: 1170, tam: 300, palavras: [["PEGA?", 1.5, "glitch"]] }
+  ], t);
+  ctx.restore();
+}
+function cena2(t) { // 3–6,5s: o raio cai, "a gente resolve na hora"
+  const a = prog(t, 3.0, 3.55);
+  if (RAIO.complete && RAIO.naturalWidth) {
+    const h = 820, w = h * RAIO.naturalWidth / RAIO.naturalHeight;
+    const esc = lerp(1.7, 1, eOutBack(a)) * (1 + batida(t) * .025);
+    ctx.save();
+    ctx.translate(540, 640 + Math.sin(t * 2) * 12); ctx.rotate(Math.sin(t * 1.3) * .03); ctx.scale(esc, esc);
+    ctx.globalAlpha = clamp(a * 3);
+    // aura atrás do raio
+    const rg = ctx.createRadialGradient(0, 0, 0, 0, 0, 460);
+    rg.addColorStop(0, rgba(C.laranja, .55 + batida(t) * .3)); rg.addColorStop(1, rgba(C.chama, 0));
+    ctx.fillStyle = rg; ctx.fillRect(-500, -500, 1000, 1000);
+    ctx.drawImage(RAIO, -w / 2, -h / 2, w, h);
+    ctx.restore();
+  }
+  // arcos elétricos ao redor do raio, a cada batida
+  const fb = ((t - 3) % BEAT) / BEAT;
+  if (t > 3.4 && fb < .35) {
+    const n = Math.floor((t - 3) / BEAT);
+    raioEletrico(540 + (hash(n) - .5) * 600, 260 + hash(n + 1) * 200, 560, 520, n * 31 + 7, 4, 1 - fb / .35);
+  }
+  palavras([
+    { y: 1170, tam: 130, palavras: [["A", 3.5], ["GENTE", 3.75], ["RESOLVE", 4.0]] },
+    { y: 1330, tam: 190, palavras: [["NA", 4.5, "fogo"], ["HORA.", 4.75, "fogo"]] }
+  ], t);
+}
+function cena3(t) { // 6,5–10,5s: bateria nova, instalação na hora
+  const queda = prog(t, 6.6, 7.25);
+  ctx.save();
+  ctx.globalAlpha = clamp(queda * 4);
+  bateriaGrande(540, lerp(150, 560, eOutBack(queda)) + Math.sin(t * 2.2) * 8, t, 6.6);
+  ctx.restore();
+  // faíscas saltando entre os terminais a cada batida
+  const fb = ((t - 3) % BEAT) / BEAT;
+  if (t > 7.3 && fb < .4) { const n = Math.floor((t - 3) / BEAT); raioEletrico(390, 385, 690, 385, n * 17 + 3, 3.5, 1 - fb / .4, n % 2 ? C.ciano : C.amarelo); }
+  palavras([
+    { y: 950, tam: 130, palavras: [["BATERIA", 7.0], ["NOVA,", 7.5]] },
+    { y: 1135, tam: 155, risco: false, palavras: [["INSTALAÇÃO", 8.0, "eletrico"]] },
+    { y: 1310, tam: 155, palavras: [["NA", 8.5, "eletrico"], ["HORA.", 8.75, "eletrico"]] }
+  ], t);
+}
+const CARTOES = [
+  { ini: 10.5, fim: 12.75, num: "01", icone: iconeTeste, l1: [["TESTE", "fogo"], ["DE"], ["BATERIA"]], l2: [["E"], ["ALTERNADOR"]], sub: "A gente testa antes de trocar" },
+  { ini: 12.75, fim: 14.95, num: "02", icone: iconeChave, l1: [["INSTALAÇÃO"]], l2: [["NA", "fogo"], ["HORA", "fogo"]], sub: "Você sai com o carro funcionando" },
+  { ini: 14.95, fim: 17.2, num: "03", icone: iconeEntrega, l1: [["ENTREGA"]], l2: [["RÁPIDA", "fogo"]], sub: "Levamos até você" }
+];
+function cena4(t) { // 10,5–17s: diferenciais
+  // título fixo
+  ctx.save();
+  ctx.globalAlpha = eOutCubic(prog(t, 10.6, 11.0));
+  ctx.font = '800 40px "Montserrat"'; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.letterSpacing = "8px";
+  ctx.fillStyle = C.ciano; ctx.shadowColor = C.ciano; ctx.shadowBlur = 20;
+  ctx.fillText("POR QUE A CARDOSO?", 540, 300);
+  ctx.restore();
+  CARTOES.forEach((K, i) => {
+    const local = t - K.ini;
+    if (t < K.ini - .05 || t > K.fim + .1) return;
+    const ent = eOutBack(prog(t, K.ini + (i ? 0 : .15), K.ini + (i ? .5 : .65)));
+    const sai = i < 2 ? eInCubic(prog(t, K.fim - .3, K.fim + .05)) : 0;
+    ctx.save();
+    ctx.globalAlpha = clamp(ent * 1.5) * (1 - sai);
+    ctx.translate(540 + sai * -260, 880 + (1 - ent) * 320 - sai * 40);
+    ctx.rotate((1 - ent) * .08 - sai * .12);
+    const esc = lerp(.85, 1, ent) * (1 - sai * .15); ctx.scale(esc, esc);
+    // cartão de vidro
+    rrect(-420, -470, 840, 920, 46);
+    const vidro = ctx.createLinearGradient(0, -470, 0, 450);
+    vidro.addColorStop(0, "rgba(255,255,255,.12)"); vidro.addColorStop(1, "rgba(255,255,255,.03)");
+    ctx.fillStyle = vidro; ctx.fill();
+    const borda = ctx.createLinearGradient(-420, -470, 420, 450);
+    borda.addColorStop(0, rgba(C.ciano, .9)); borda.addColorStop(.5, "rgba(255,255,255,.15)"); borda.addColorStop(1, rgba(C.chama, .9));
+    ctx.strokeStyle = borda; ctx.lineWidth = 4; ctx.shadowColor = rgba(C.ciano, .5); ctx.shadowBlur = 30 + batida(t) * 30; ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.font = '400 80px "Anton"'; ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillStyle = "rgba(255,255,255,.18)";
+    ctx.fillText(K.num, -360, -420);
+    // círculo do ícone
+    ctx.save(); ctx.translate(0, -230);
+    const rg = ctx.createRadialGradient(0, 0, 0, 0, 0, 170);
+    rg.addColorStop(0, rgba(C.laranja, .35 + batida(t) * .2)); rg.addColorStop(1, rgba(C.chama, 0));
+    ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(0, 0, 170, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 150, 0, Math.PI * 2); ctx.stroke();
+    // anel girando
+    ctx.strokeStyle = C.ciano; ctx.lineWidth = 6; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(0, 0, 150, t * 2, t * 2 + 1.2); ctx.stroke();
+    K.icone(t, local);
+    ctx.restore();
+    ctx.restore();
+    // textos do cartão (desenhados fora do transform para medir certo; acompanham a saída)
+    ctx.save();
+    ctx.globalAlpha = 1 - sai;
+    ctx.translate(sai * -260, (1 - ent) * 320 - sai * 40);
+    const base = K.ini + (i ? .25 : .45);
+    let n = 0;
+    const lin = (L, y, tam) => ({ y, tam, palavras: L.map(p => [p[0], base + (n++) * .25, p[1]]) });
+    palavras([{ ...lin(K.l1, 975, 110), risco: false }, lin(K.l2, 1100, 110)], t, { maxW: 740 });
+    ctx.globalAlpha *= eOutCubic(prog(t, base + n * .25, base + n * .25 + .4));
+    ctx.font = '600 42px "Montserrat"'; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = C.texto;
+    ctx.fillText(K.sub, 540, 1230);
+    ctx.restore();
+    // varredura de luz na troca de cartão
+    if (i > 0) {
+      const k = prog(t, K.ini - .25, K.ini + .35);
+      if (k > 0 && k < 1) {
+        ctx.save(); ctx.globalCompositeOperation = "lighter";
+        const x = lerp(-400, W + 400, eInOut(k));
+        const g = ctx.createLinearGradient(x - 200, 0, x + 200, 0);
+        g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(.5, rgba(C.ciano, .45)); g.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = g; ctx.translate(x, H / 2); ctx.rotate(.35); ctx.fillRect(-200, -H, 400, H * 2);
+        ctx.restore();
+      }
+    }
+  });
+}
+const MARCAS = [["Moura", 17.6, 0], ["Heliar", 17.85, 0], ["Bosch", 18.1, 1], ["Zetta", 18.35, 1], ["Pioneiro", 18.6, 2]];
+function cena5(t) { // 17–19,5s: marcas
+  palavras([
+    { y: 470, tam: 140, palavras: [["MARCAS", 17.1], ["QUE", 17.3]] },
+    { y: 630, tam: 150, palavras: [["VOCÊ", 17.45], ["CONFIA", 17.6, "fogo"]] }
+  ], t);
+  const fonte = '800 56px "Montserrat"';
+  const linhas = [0, 1, 2].map(r => MARCAS.filter(m => m[2] === r));
+  linhas.forEach((L, r) => {
+    const ws = L.map(m => medir(m[0], fonte) + 90), total = ws.reduce((a, b) => a + b, 0) + 30 * (L.length - 1);
+    let x = 540 - total / 2;
+    L.forEach((m, j) => {
+      const a = prog(t, m[1], m[1] + .4);
+      if (a > 0) {
+        const w = ws[j], cx = x + w / 2, cy = 870 + r * 150;
+        ctx.save(); ctx.translate(cx, cy); const s = eOutBack(a); ctx.scale(s, s); ctx.globalAlpha = clamp(a * 2);
+        rrect(-w / 2, -55, w, 110, 55);
+        ctx.fillStyle = "rgba(255,255,255,.07)"; ctx.fill();
+        const g = ctx.createLinearGradient(-w / 2, 0, w / 2, 0); g.addColorStop(0, C.chama); g.addColorStop(1, C.ciano);
+        ctx.strokeStyle = g; ctx.lineWidth = 4; ctx.shadowColor = C.laranja; ctx.shadowBlur = 20 + batida(t) * 25; ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.font = fonte; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#fff"; ctx.fillText(m[0], 0, 3);
+        // brilho passando pelas marcas
+        const k = ((t - m[1]) * .9) % 1.6;
+        ctx.save(); rrect(-w / 2, -55, w, 110, 55); ctx.clip();
+        const sx = lerp(-w, w, k / 1.6); const sg = ctx.createLinearGradient(sx - 40, 0, sx + 40, 0);
+        sg.addColorStop(0, "rgba(255,255,255,0)"); sg.addColorStop(.5, "rgba(255,255,255,.35)"); sg.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = sg; ctx.fillRect(sx - 40, -60, 80, 120); ctx.restore();
+        ctx.restore();
+      }
+      x += ws[j] + 30;
+    });
+  });
+}
+function cena6(t) { // 19,5–22,5s: carga completa, especialistas
+  if (RAIO.complete && RAIO.naturalWidth) {
+    const h = 1300, w = h * RAIO.naturalWidth / RAIO.naturalHeight;
+    ctx.save(); ctx.globalAlpha = .28 * eOutCubic(prog(t, 19.5, 20.2)) * (1 + batida(t) * .5);
+    ctx.translate(540, 820); ctx.rotate(.12); const s = 1 + (t - 19.5) * .03; ctx.scale(s, s);
+    ctx.drawImage(RAIO, -w / 2, -h / 2, w, h); ctx.restore();
+  }
+  // anel de choque
+  const k = prog(t, 19.5, 20.3);
+  if (k > 0 && k < 1) {
+    ctx.save(); ctx.globalAlpha = 1 - k; ctx.strokeStyle = C.ciano; ctx.lineWidth = 30 * (1 - k) + 2;
+    ctx.shadowColor = C.ciano; ctx.shadowBlur = 50;
+    ctx.beginPath(); ctx.arc(540, 1000, 50 + eOutCubic(k) * 900, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  }
+  palavras([
+    { y: 720, tam: 110, palavras: [["ESPECIALISTAS", 19.75], ["EM", 20.1]] },
+    { y: 930, tam: 230, palavras: [["BATERIAS", 20.35, "fogo"]] },
+    { y: 1140, tam: 150, palavras: [["E", 20.85], ["GERADORES.", 21.0, "eletrico"]] }
+  ], t);
+}
+function cena7(t) { // 22,5–25s: logo + chamada
+  const a = prog(t, 22.5, 23.1);
+  // brilho atrás da logo
+  const rg = ctx.createRadialGradient(540, 640, 0, 540, 640, 560);
+  rg.addColorStop(0, rgba(C.azul, .55)); rg.addColorStop(.5, rgba(C.chama, .18)); rg.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.save(); ctx.globalAlpha = eOutCubic(a) * (1 + Math.sin(t * 4) * .08); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H); ctx.restore();
+  if (LOGO.complete && LOGO.naturalWidth) {
+    const w = 840, h = w * LOGO.naturalHeight / LOGO.naturalWidth;
+    const e = eOutExpo(a);
+    ctx.save();
+    ctx.translate(540, 640); const s = lerp(1.25, 1, e) * (1 + (t - 23) * .012 * (t > 23 ? 1 : 0)); ctx.scale(s, s);
+    ctx.globalAlpha = clamp(a * 2.5);
+    if (e < .97) ctx.filter = `blur(${((1 - e) * 22).toFixed(1)}px)`;
+    ctx.imageSmoothingQuality = "high";
+    ctx.shadowColor = "rgba(42,212,230,.55)"; ctx.shadowBlur = 50;
+    ctx.drawImage(LOGO, -w / 2, -h / 2, w, h);
+    ctx.restore();
+    // brilho atravessando a logo (logo original intacta; só luz por cima)
+    const k = prog(t, 23.0, 23.8);
+    if (k > 0 && k < 1) {
+      ctx.save(); ctx.globalCompositeOperation = "lighter";
+      ctx.beginPath(); ctx.rect(540 - w / 2, 640 - h / 2, w, h); ctx.clip();
+      const x = lerp(540 - w / 2 - 200, 540 + w / 2 + 200, eInOut(k));
+      const g = ctx.createLinearGradient(x - 90, 0, x + 90, 0);
+      g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(.5, "rgba(255,255,255,.35)"); g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g; ctx.fillRect(x - 90, 640 - h / 2, 180, h); ctx.restore();
+    }
+  }
+  // chamada
+  const fade = (t0, y) => { const k = eOutCubic(prog(t, t0, t0 + .35)); ctx.globalAlpha = k; return y + (1 - k) * 40; };
+  ctx.save(); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  let y = fade(22.85, 900);
+  ctx.font = '800 46px "Montserrat"'; ctx.letterSpacing = "6px";
+  ctx.fillStyle = gradienteDestaque(300, 780, "fogo", t); ctx.shadowColor = C.chama; ctx.shadowBlur = 24;
+  ctx.fillText("CHAMA NO ZAP", 540, y);
+  ctx.letterSpacing = "0px";
+  y = fade(23.0, 1015);
+  ctx.font = '400 128px "Anton"'; ctx.fillStyle = "#fff"; ctx.shadowColor = rgba(C.laranja, .6); ctx.shadowBlur = 30 + batida(t) * 20;
+  ctx.fillText("(11) 96298-6718", 540, y);
+  y = fade(23.2, 1175);
+  ctx.font = '400 76px "Anton"'; ctx.fillStyle = gradienteDestaque(260, 820, "eletrico", t); ctx.shadowColor = C.ciano; ctx.shadowBlur = 24;
+  ctx.fillText("3 LOJAS PERTO DE VOCÊ", 540, y);
+  y = fade(23.35, 1262);
+  ctx.shadowBlur = 0; ctx.font = '600 42px "Montserrat"'; ctx.fillStyle = C.texto;
+  ctx.fillText("Embu-Guaçu · Cipó · Jardim Ângela", 540, y);
+  ctx.restore();
+}
+
+/* ---------- transições ---------- */
+function liquido(t, t0, dur) { // efeito líquido elétrico subindo; cobre a tela no meio
+  const p = prog(t, t0, t0 + dur);
+  if (p <= 0 || p >= 1) return;
+  const frente = lerp(H + 160, -300, eInOut(clamp(p / .6)));
+  const tras = lerp(H + 300, -300, eInOut(clamp((p - .4) / .6)));
+  const onda = (x, fase) => Math.sin(x * .011 + t * 9 + fase) * 46 + Math.sin(x * .027 - t * 6 + fase) * 22;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(0, frente + onda(0, 0));
+  for (let x = 0; x <= W; x += 20) ctx.lineTo(x, frente + onda(x, 0));
+  for (let x = W; x >= 0; x -= 20) ctx.lineTo(x, Math.min(H + 400, tras + onda(x, 2)));
+  ctx.closePath();
+  const g = ctx.createLinearGradient(0, frente, 0, tras);
+  g.addColorStop(0, C.amarelo); g.addColorStop(.08, C.laranja); g.addColorStop(.35, C.chama); g.addColorStop(.75, "#6a1a8a"); g.addColorStop(1, C.azul);
+  ctx.fillStyle = g; ctx.fill();
+  // borda brilhante
+  ctx.globalCompositeOperation = "lighter"; ctx.lineWidth = 8; ctx.strokeStyle = "#fff"; ctx.shadowColor = C.amarelo; ctx.shadowBlur = 40;
+  ctx.beginPath(); for (let x = 0; x <= W; x += 20) ctx.lineTo(x, frente + onda(x, 0)); ctx.stroke();
+  ctx.strokeStyle = C.ciano; ctx.shadowColor = C.ciano;
+  ctx.beginPath(); for (let x = 0; x <= W; x += 20) ctx.lineTo(x, tras + onda(x, 2)); ctx.stroke();
+  // bolhas
+  ctx.shadowBlur = 0; ctx.fillStyle = "rgba(255,255,255,.5)";
+  for (let i = 0; i < 26; i++) {
+    const bx = hash(i + 300) * W, by = lerp(frente, Math.min(H, tras), hash(i + 400)) - (t * 300 * (.5 + hash(i + 500))) % 200;
+    ctx.beginPath(); ctx.arc(bx, by, 4 + hash(i + 600) * 12, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+function clarao(t, tc, subida, descida, cor = "#ffffff") {
+  const a = t < tc ? eInCubic(prog(t, tc - subida, tc)) : 1 - eOutCubic(prog(t, tc, tc + descida));
+  if (a <= 0) return;
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = cor; ctx.fillRect(0, 0, W, H); ctx.restore();
+}
+function luzCentral(t, tc, antes, depois, raio, cor) {
+  const a = t < tc ? eInCubic(prog(t, tc - antes, tc)) : 1 - eOutCubic(prog(t, tc, tc + depois));
+  if (a <= 0) return;
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  const g = ctx.createRadialGradient(540, 900, 0, 540, 900, raio * (.4 + a));
+  g.addColorStop(0, `rgba(255,255,255,${a})`); g.addColorStop(.3, rgba(cor, a * .8)); g.addColorStop(1, rgba(cor, 0));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore();
+}
+function camada(alfa, esc, cx, cy, fn) {
+  if (alfa <= 0.003) return;
+  ctx.save(); ctx.globalAlpha = alfa;
+  ctx.translate(cx, cy); ctx.scale(esc, esc); ctx.translate(-cx, -cy);
+  fn(); ctx.restore();
+}
+
+/* ---------- render(t): desenha o quadro do instante t (segundos) ---------- */
+function render(t) {
+  t = clamp(t, 0, DUR - 1e-4);
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over"; ctx.filter = "none";
+  // tremida de câmera nos impactos
+  const imp = Math.max(1 - prog(t, 3, 3.5), 0) * (t >= 3 ? 1 : 0) + Math.max(1 - prog(t, 19.5, 19.9), 0) * (t >= 19.5 ? 1 : 0);
+  ctx.translate((hash(Math.floor(t * 60)) - .5) * 30 * imp, (hash(Math.floor(t * 60) + 1) - .5) * 30 * imp);
+  ctx.translate(540, 960); const zoomLento = 1.02 + Math.sin(t * .4) * .015; ctx.scale(zoomLento, zoomLento); ctx.translate(-540, -960);
+
+  fundo(t);
+  desenharBrasas(t, t < 3 ? .25 : .8);
+
+  // cena 1 (acaba no clarão do raio)
+  if (t < 3.05) camada(1, 1, 540, 960, () => cena1(t));
+  // cena 2 → zoom para dentro do raio
+  if (t >= 2.98 && t < 6.6) {
+    const z = eInCubic(prog(t, 6.05, 6.5));
+    camada(1 - prog(t, 6.35, 6.5), 1 + z * 3.2, 560, 560, () => cena2(t));
+  }
+  // cena 3 sai do zoom; sai pelo líquido
+  if (t >= 6.42 && t < 10.55) {
+    const z = eOutExpo(prog(t, 6.42, 7.0));
+    camada(prog(t, 6.42, 6.62), lerp(1.7, 1, z), 540, 900, () => cena3(t));
+  }
+  if (t >= 10.48 && t < 17.05) camada(1, 1, 540, 960, () => cena4(t));
+  if (t >= 16.98 && t < 19.55) camada(1 - prog(t, 19.3, 19.5), 1 + eInCubic(prog(t, 19.1, 19.5)) * .2, 540, 900, () => cena5(t));
+  if (t >= 19.48 && t < 22.6) {
+    const z = eInCubic(prog(t, 22.15, 22.55));
+    camada(1 - prog(t, 22.3, 22.55), 1 - z * .12, 540, 900, () => cena6(t));
+  }
+  if (t >= 22.45) camada(1, 1, 540, 960, () => cena7(t));
+
+  desenharFaiscas(t);
+
+  // transições
+  if (t > 2.8 && t < 3.1) { // raio caindo do topo
+    const k = prog(t, 2.8, 2.98);
+    raioEletrico(620, -40, lerp(620, 540, k), lerp(-40, 640, k), 99 + Math.floor(t * 30), 9, 1);
+  }
+  clarao(t, 3.0, .06, .45);
+  luzCentral(t, 6.5, .4, .45, 1100, C.laranja);
+  liquido(t, 10.1, .8);
+  liquido(t, 16.6, .8);
+  luzCentral(t, 19.5, .25, .5, 1300, C.ciano);
+  clarao(t, 19.5, .08, .35, "#eafcff");
+  luzCentral(t, 22.5, .35, .5, 900, C.azul);
+
+  barraCarga(t);
+  acabamento(t);
+  ctx.restore();
+}
+
+/* =====================================================================
+   SOM — trilha e efeitos com Web Audio API (120 BPM, sincronizados)
+   agendarAudio(contexto, saída, T0): T0 = instante do contexto que vale t=0
+   ===================================================================== */
+function agendarAudio(ac, saida, T0) {
+  const sr = ac.sampleRate, rnd = mulberry32(7);
+  const ruido = ac.createBuffer(1, sr * 2, sr);
+  { const d = ruido.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = rnd() * 2 - 1; }
+  const comp = ac.createDynamicsCompressor();
+  comp.threshold.value = -16; comp.knee.value = 8; comp.ratio.value = 4; comp.attack.value = .004; comp.release.value = .18;
+  const mestre = ac.createGain(); mestre.gain.value = .62;
+  // limitador no fim da cadeia: nada passa do volume máximo
+  const limite = ac.createDynamicsCompressor();
+  limite.threshold.value = -4; limite.knee.value = 0; limite.ratio.value = 20; limite.attack.value = .001; limite.release.value = .08;
+  const final = ac.createGain(); final.gain.value = .9;
+  mestre.connect(comp); comp.connect(limite); limite.connect(final); final.connect(saida);
+  // final: fade nos últimos 0,6s
+  mestre.gain.setValueAtTime(.62, T0 + 24.3); mestre.gain.linearRampToValueAtTime(0.0001, T0 + 25);
+  // reverb simples (eco curto) para dar espaço
+  const eco = ac.createDelay(1); eco.delayTime.value = .375; const fb = ac.createGain(); fb.gain.value = .28;
+  const ecoFiltro = ac.createBiquadFilter(); ecoFiltro.type = "lowpass"; ecoFiltro.frequency.value = 2500;
+  const ecoSai = ac.createGain(); ecoSai.gain.value = .35;
+  eco.connect(ecoFiltro); ecoFiltro.connect(fb); fb.connect(eco); ecoFiltro.connect(ecoSai); ecoSai.connect(mestre);
+
+  const T = s => T0 + s;
+  function g(v = 1) { const n = ac.createGain(); n.gain.value = v; return n; }
+  function env(param, t, ataque, pico, queda) {
+    param.setValueAtTime(0.0001, t); param.linearRampToValueAtTime(pico, t + ataque); param.exponentialRampToValueAtTime(0.0001, t + ataque + queda);
+  }
+  function fonteRuido(t, dur) { const s = ac.createBufferSource(); s.buffer = ruido; s.loop = true; s.start(t, rnd() * 1.5); s.stop(t + dur + .05); return s; }
+  function osc(tipo, f, t, dur) { const o = ac.createOscillator(); o.type = tipo; o.frequency.setValueAtTime(f, t); o.start(t); o.stop(t + dur + .05); return o; }
+
+  function kick(s, v = 1) {
+    const t = T(s), o = osc("sine", 150, t, .5), a = g(0);
+    o.frequency.exponentialRampToValueAtTime(42, t + .13);
+    env(a.gain, t, .003, v, .42); o.connect(a); a.connect(mestre);
+    const r = fonteRuido(t, .03), f = ac.createBiquadFilter(), b = g(0); f.type = "highpass"; f.frequency.value = 3000;
+    env(b.gain, t, .001, .25 * v, .02); r.connect(f); f.connect(b); b.connect(mestre);
+  }
+  function caixa(s, v = .6) {
+    const t = T(s), r = fonteRuido(t, .25), f = ac.createBiquadFilter(), a = g(0);
+    f.type = "bandpass"; f.frequency.value = 1900; f.Q.value = .7; env(a.gain, t, .002, v, .19);
+    r.connect(f); f.connect(a); a.connect(mestre); a.connect(eco);
+    const o = osc("triangle", 200, t, .12), b = g(0); o.frequency.exponentialRampToValueAtTime(150, t + .1); env(b.gain, t, .002, v * .6, .1); o.connect(b); b.connect(mestre);
+  }
+  function chimbal(s, v = .18, aberto = false) {
+    const t = T(s), r = fonteRuido(t, .3), f = ac.createBiquadFilter(), a = g(0), p = ac.createStereoPanner();
+    f.type = "highpass"; f.frequency.value = 7500; env(a.gain, t, .001, v, aberto ? .22 : .045);
+    p.pan.value = (rnd() - .5) * .6; r.connect(f); f.connect(a); a.connect(p); p.connect(mestre);
+  }
+  function grave(s, fq, dur, v = .32) {
+    const t = T(s), o = osc("sawtooth", fq, t, dur), sub = osc("sine", fq, t, dur), f = ac.createBiquadFilter(), a = g(0);
+    f.type = "lowpass"; f.Q.value = 6; f.frequency.setValueAtTime(1100, t); f.frequency.exponentialRampToValueAtTime(160, t + dur);
+    a.gain.setValueAtTime(0.0001, t); a.gain.linearRampToValueAtTime(v, t + .008); a.gain.setValueAtTime(v, t + dur * .6); a.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(f); f.connect(a); const sg = g(.7); sub.connect(sg); sg.connect(a); a.connect(mestre);
+  }
+  function nota(s, fq, dur, v = .07, tipo = "square", corte = 2600) {
+    const t = T(s), o = osc(tipo, fq, t, dur), o2 = osc(tipo, fq * 1.006, t, dur), f = ac.createBiquadFilter(), a = g(0), p = ac.createStereoPanner();
+    f.type = "lowpass"; f.frequency.value = corte; env(a.gain, t, .005, v, dur);
+    p.pan.value = Math.sin(s * 5) * .5; o.connect(f); o2.connect(f); f.connect(a); a.connect(p); p.connect(mestre); a.connect(eco);
+  }
+  function varredura(s, dur, f0, f1, v = .3, subir = true, Q = 3) { // whoosh / riser
+    const t = T(s), r = fonteRuido(t, dur), f = ac.createBiquadFilter(), a = g(0);
+    f.type = "bandpass"; f.Q.value = Q; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    if (subir) { a.gain.setValueAtTime(0.0001, t); a.gain.exponentialRampToValueAtTime(v, t + dur * .95); a.gain.linearRampToValueAtTime(0.0001, t + dur); }
+    else { a.gain.setValueAtTime(0.0001, t); a.gain.linearRampToValueAtTime(v, t + .04); a.gain.exponentialRampToValueAtTime(0.0001, t + dur); }
+    r.connect(f); f.connect(a); a.connect(mestre); a.connect(eco);
+  }
+  function impacto(s, v = 1) {
+    const t = T(s), o = osc("sine", 90, t, 1.8), a = g(0);
+    o.frequency.exponentialRampToValueAtTime(26, t + 1.2); env(a.gain, t, .004, v * .9, 1.6); o.connect(a); a.connect(mestre);
+    const r = fonteRuido(t, 1.2), f = ac.createBiquadFilter(), b = g(0); f.type = "lowpass"; f.frequency.setValueAtTime(3000, t); f.frequency.exponentialRampToValueAtTime(200, t + 1);
+    env(b.gain, t, .002, v * .5, 1.1); r.connect(f); f.connect(b); b.connect(mestre);
+  }
+  function choque(s, v = .22, dur = .22) { // zap elétrico
+    const t = T(s), o = osc("square", 1200, t, dur), f = ac.createBiquadFilter(), a = g(0);
+    for (let i = 0; i < dur / .012; i++) o.frequency.setValueAtTime(400 + rnd() * 2800, t + i * .012);
+    f.type = "bandpass"; f.frequency.value = 2200; f.Q.value = 1.2;
+    for (let i = 0; i < dur / .02; i++) a.gain.setValueAtTime(rnd() > .35 ? v * (1 - i * .02 / dur) : 0, t + i * .02);
+    a.gain.setValueAtTime(0, t + dur);
+    o.connect(f); f.connect(a); a.connect(mestre); a.connect(eco);
+    const r = fonteRuido(t, dur), h = ac.createBiquadFilter(), b = g(0); h.type = "highpass"; h.frequency.value = 4000; env(b.gain, t, .002, v * .6, dur);
+    r.connect(h); h.connect(b); b.connect(mestre);
+  }
+  function trovao(s) {
+    const t = T(s), r = fonteRuido(t, 2.4), f = ac.createBiquadFilter(), a = g(0);
+    f.type = "lowpass"; f.frequency.setValueAtTime(1600, t); f.frequency.exponentialRampToValueAtTime(140, t + 2.2);
+    a.gain.setValueAtTime(0.0001, t); a.gain.linearRampToValueAtTime(.9, t + .02);
+    for (let i = 1; i < 8; i++) a.gain.linearRampToValueAtTime(.9 * (1 - i / 8) * (.6 + rnd() * .4), t + i * .25);
+    a.gain.linearRampToValueAtTime(0.0001, t + 2.3);
+    r.connect(f); f.connect(a); a.connect(mestre);
+  }
+  function bip(s, fq = 760, v = .1) { const t = T(s), o = osc("square", fq, t, .14), f = ac.createBiquadFilter(), a = g(0); f.type = "lowpass"; f.frequency.value = 1800; env(a.gain, t, .004, v, .12); o.connect(f); f.connect(a); a.connect(mestre); }
+  function carregar(s) { const t = T(s), o = osc("sine", 500, t, .22), a = g(0); o.frequency.exponentialRampToValueAtTime(1500, t + .18); env(a.gain, t, .005, .16, .2); o.connect(a); a.connect(mestre); a.connect(eco); }
+  function pluck(s, fq) { nota(s, fq, .35, .09, "triangle", 4000); nota(s, fq * 2, .2, .03, "sine", 6000); }
+  function partida(s, dur, vel, fq) { // motor de arranque falhando
+    const t = T(s), o = osc("sawtooth", fq, t, dur), f = ac.createBiquadFilter(), a = g(0), lfo = osc("square", vel, t, dur), prof = g(.13);
+    f.type = "lowpass"; f.frequency.value = 520; o.frequency.linearRampToValueAtTime(fq * .7, t + dur);
+    lfo.frequency.linearRampToValueAtTime(vel * .6, t + dur);
+    a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(.13, t + .05); a.gain.setValueAtTime(.13, t + dur - .12); a.gain.linearRampToValueAtTime(0, t + dur);
+    lfo.connect(prof); prof.connect(a.gain); o.connect(f); f.connect(a); a.connect(mestre);
+    const r = fonteRuido(t, dur), rf = ac.createBiquadFilter(), ra = g(0); rf.type = "bandpass"; rf.frequency.value = 350; rf.Q.value = 1;
+    ra.gain.setValueAtTime(0, t); ra.gain.linearRampToValueAtTime(.16, t + .05); ra.gain.linearRampToValueAtTime(0, t + dur);
+    r.connect(rf); rf.connect(ra); ra.connect(mestre);
+  }
+  function pad(s, freqs, dur, v = .05) {
+    const t = T(s);
+    for (const fq of freqs) for (const d of [.997, 1.004]) {
+      const o = osc("sawtooth", fq * d, t, dur), f = ac.createBiquadFilter(), a = g(0);
+      f.type = "lowpass"; f.frequency.setValueAtTime(600, t); f.frequency.linearRampToValueAtTime(2200, t + dur * .4);
+      a.gain.setValueAtTime(0.0001, t); a.gain.linearRampToValueAtTime(v, t + .08); a.gain.setValueAtTime(v, t + dur - .6); a.gain.linearRampToValueAtTime(0.0001, t + dur);
+      o.connect(f); f.connect(a); a.connect(mestre); a.connect(eco);
+    }
+  }
+
+  /* ---- CENA 1 (0–3s): tensão ---- */
+  for (let s = 0; s < 3; s += BEAT) bip(s, 760, .07);           // alerta piscando
+  partida(.2, 1.05, 11, 92); partida(1.45, 1.1, 7, 80);          // carro tentando ligar
+  { const t = T(0), o = osc("sine", 55, t, 3), a = g(0); o.frequency.linearRampToValueAtTime(70, t + 3); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(.22, t + 2.8); a.gain.linearRampToValueAtTime(0, t + 3.02); o.connect(a); a.connect(mestre); }
+  kick(.5, .45); kick(1.0, .45); kick(1.5, .7);                  // palavras batendo
+  choque(1.52, .12, .3);
+  varredura(1.9, 1.1, 300, 6000, .35);                           // subida para o raio
+  /* ---- 3s: o raio cai ---- */
+  trovao(3.0); impacto(3.0, 1); choque(2.92, .3, .35); chimbal(3.0, .3, true);
+
+  /* ---- batida principal 3s–22,5s ---- */
+  const acordes = [ // Lá menor – Fá – Dó – Sol
+    { b: 55, n: [220, 261.63, 329.63, 440] }, { b: 43.65, n: [174.61, 220, 261.63, 349.23] },
+    { b: 65.41, n: [261.63, 329.63, 392, 523.25] }, { b: 49, n: [196, 246.94, 293.66, 392] }
+  ];
+  for (let s = 3; s < 22.5 - 1e-6; s += BEAT) {
+    const i = Math.round((s - 3) / BEAT), compasso = Math.floor(i / 4), ac_ = acordes[compasso % 4];
+    const pre = s >= 18.5 && s < 19.5; // preparação antes da explosão
+    if (!pre) kick(s, i % 4 === 0 ? 1 : .85);
+    if (s >= 6.5 && i % 2 === 1 && !pre) caixa(s, .5);
+    // chimbal em colcheias e semicolcheias
+    chimbal(s + .25, .14, i % 4 === 3);
+    if (s >= 10.5) { chimbal(s + .125, .06); chimbal(s + .375, .06); }
+    // baixo pulsando em colcheias
+    if (!pre) for (const o of [0, .25]) grave(s + o, ac_.b * (o ? 2 : 1), .22, s < 6.5 ? .22 : .3);
+    // arpejo a partir de 10,5s
+    if (s >= 10.5 && !pre) for (let k = 0; k < 4; k++) nota(s + k * .125, ac_.n[(i * 4 + k) % 4] * (s >= 19.5 ? 2 : 1), .12, s >= 19.5 ? .055 : .045);
+  }
+  // rufada de caixa e subida antes da explosão (18,5–19,5s)
+  for (let k = 0; k < 16; k++) caixa(18.5 + k * .0625, .15 + k * .02);
+  varredura(18.4, 1.1, 200, 9000, .45, true, 2);
+  /* ---- palavras e acentos ---- */
+  choque(4.5, .2); choque(4.75, .18);                            // NA HORA
+  varredura(6.0, .5, 400, 8000, .4); impacto(6.5, .6); varredura(6.5, .7, 6000, 300, .3, false); // zoom
+  carregar(3.15); carregar(6.75); carregar(10.7); carregar(13.0); carregar(15.2);   // barra subindo
+  choque(8.0, .14); choque(8.5, .14);
+  varredura(10.0, .5, 500, 4000, .3); varredura(10.5, .6, 3000, 250, .35, false, 4);   // líquido
+  varredura(12.5, .4, 800, 7000, .22); varredura(14.7, .4, 800, 7000, .22);           // troca de cartões
+  varredura(16.5, .5, 500, 4000, .3); varredura(17.0, .6, 3000, 250, .35, false, 4);   // líquido
+  MARCAS.forEach((m, k) => pluck(m[1], [440, 523.25, 659.25, 783.99, 880][k]));      // marcas
+  /* ---- 19,5s: carga completa ---- */
+  impacto(19.5, 1); choque(19.5, .3, .4); chimbal(19.5, .35, true); varredura(19.5, 1.5, 9000, 800, .3, false, 1);
+  { const t = T(19.45), o = osc("sawtooth", 200, t, .7), f = ac.createBiquadFilter(), a = g(0); o.frequency.exponentialRampToValueAtTime(1600, t + .5); f.type = "lowpass"; f.frequency.value = 3000; env(a.gain, t, .01, .12, .6); o.connect(f); f.connect(a); a.connect(mestre); a.connect(eco); }
+  choque(20.35, .16); choque(21.0, .14);
+  /* ---- 22,5s: logo ---- */
+  varredura(21.9, .6, 300, 7000, .35);
+  impacto(22.5, .9); pad(22.5, [110, 220, 261.63, 329.63, 440], 2.5, .035); grave(22.5, 55, 2.4, .35);
+  for (let k = 0; k < 4; k++) nota(22.85 + k * .15, [659.25, 783.99, 880, 1046.5][k], .5, .05, "triangle", 5000);
+}
+
+/* ---------- WAV (para gerar o MP4 fora do navegador) ---------- */
+async function gerarWav() {
+  const sr = 48000, oac = new OfflineAudioContext(2, sr * DUR, sr);
+  agendarAudio(oac, oac.destination, 0);
+  const buf = await oac.startRendering();
+  const n = buf.length, dados = new DataView(new ArrayBuffer(44 + n * 4));
+  const esc = (o, s) => { for (let i = 0; i < s.length; i++) dados.setUint8(o + i, s.charCodeAt(i)); };
+  esc(0, "RIFF"); dados.setUint32(4, 36 + n * 4, true); esc(8, "WAVE"); esc(12, "fmt ");
+  dados.setUint32(16, 16, true); dados.setUint16(20, 1, true); dados.setUint16(22, 2, true); dados.setUint32(24, sr, true);
+  dados.setUint32(28, sr * 4, true); dados.setUint16(32, 4, true); dados.setUint16(34, 16, true); esc(36, "data"); dados.setUint32(40, n * 4, true);
+  const L = buf.getChannelData(0), R = buf.getChannelData(1);
+  for (let i = 0, o = 44; i < n; i++, o += 4) { dados.setInt16(o, clamp(L[i], -1, 1) * 32767, true); dados.setInt16(o + 2, clamp(R[i], -1, 1) * 32767, true); }
+  let bin = ""; const u8 = new Uint8Array(dados.buffer);
+  for (let i = 0; i < u8.length; i += 32768) bin += String.fromCharCode.apply(null, u8.subarray(i, i + 32768));
+  return btoa(bin);
+}
+
+/* ---------- tocar e gravar ---------- */
+const pronto = Promise.all([document.fonts.load('400 100px "Anton"'), document.fonts.load('600 40px "Montserrat"'), document.fonts.load('800 40px "Montserrat"'),
+  LOGO.decode().catch(() => {}), RAIO.decode().catch(() => {})]).then(() => { cacheMedida.clear(); render(0); });
+window.VIDEO = { render, gerarWav, pronto, DUR, FPS };
+
+const btBaixar = document.getElementById("baixar"), btAssistir = document.getElementById("assistir");
+const status = document.getElementById("status"), barra = document.getElementById("progresso");
+let ocupado = false;
+function tocar(gravar) {
+  if (ocupado) return; ocupado = true;
+  btBaixar.disabled = btAssistir.disabled = true;
+  const ac = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+  const destino = gravar ? ac.createMediaStreamDestination() : null;
+  const T0 = ac.currentTime + .25;
+  const mix = ac.createGain(); mix.connect(ac.destination);
+  if (destino) mix.connect(destino);
+  agendarAudio(ac, mix, T0);
+  let gravador = null, pedacos = [], tipo = "";
+  if (gravar) {
+    const tipos = ["video/mp4;codecs=avc1.640028,mp4a.40.2", "video/mp4;codecs=avc1.4d002a,mp4a.40.2", "video/mp4;codecs=avc1,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm"];
+    tipo = tipos.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
+    const fluxo = canvas.captureStream(FPS);
+    destino.stream.getAudioTracks().forEach(tr => fluxo.addTrack(tr));
+    gravador = new MediaRecorder(fluxo, { mimeType: tipo, videoBitsPerSecond: 10000000, audioBitsPerSecond: 256000 });
+    gravador.ondataavailable = e => e.data.size && pedacos.push(e.data);
+    gravador.onstop = () => {
+      const mp4 = tipo.startsWith("video/mp4");
+      const blob = new Blob(pedacos, { type: mp4 ? "video/mp4" : "video/webm" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+      a.download = mp4 ? "cardoso-baterias.mp4" : "cardoso-baterias.webm"; document.body.appendChild(a); a.click(); a.remove();
+      status.textContent = mp4 ? "Pronto! O MP4 foi baixado (veja a pasta Downloads)." : "Pronto! Seu navegador não grava MP4, então baixei em WEBM. Use o Google Chrome atualizado para MP4.";
+      ocupado = false; btBaixar.disabled = btAssistir.disabled = false;
+    };
+    setTimeout(() => gravador.start(250), Math.max(0, (T0 - ac.currentTime) * 1000 - 60));
+    status.textContent = "Gravando… não troque de aba nem minimize a janela.";
+  } else status.textContent = "Tocando…";
+  const quadro = () => {
+    const t = ac.currentTime - T0;
+    render(Math.max(0, t));
+    barra.style.width = (clamp(t / DUR) * 100) + "%";
+    if (t < DUR + .1) requestAnimationFrame(quadro);
+    else {
+      if (gravador) { status.textContent = "Finalizando o arquivo…"; gravador.stop(); }
+      else { status.textContent = "Fim. Clique em Baixar MP4 para gravar o vídeo."; ocupado = false; btBaixar.disabled = btAssistir.disabled = false; }
+      setTimeout(() => ac.close(), 500);
+    }
+  };
+  requestAnimationFrame(quadro);
+}
+btBaixar.onclick = () => pronto.then(() => tocar(true));
+btAssistir.onclick = () => pronto.then(() => tocar(false));
+</script>
+</body>
+</html>

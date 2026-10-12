@@ -5,3 +5,6 @@ dist
 
 # Ignore the output video from Git but not videos you import into src/.
 out
+
+# MP4 gerado (é grande; é entregue à parte)
+cardoso/*.mp4
