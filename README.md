@@ -56,7 +56,7 @@ topo, sobre, serviços, marcas, portfólio, lojas, depoimentos, perguntas freque
   `<meta name="description">`, porque o Google e o WhatsApp leem essas tags sem executar JavaScript.
 
 ### Depois de qualquer alteração: atualize a versão
-No `index.html`, aumente o número em `?v=1.3.0` (ex.: para `?v=1.3.1`) **em todas as linhas**
+No `index.html`, aumente o número em `?v=1.4.0` (ex.: para `?v=1.4.1`) **em todas as linhas**
 (`estilo.css`, `conteudo.js`, `app.js` e ícones). Assim, quem já visitou o site não continua vendo a
 versão antiga guardada em cache.
 
@@ -89,11 +89,12 @@ As marcas aparecem em cartões só com o nome, sem logotipos. Se um fabricante a
 a imagem em `assets/marcas/`, preencha `imagem` e mude `imagemAutorizada` para `true`.
 
 ## Visual
-Estilo “álbum de adesivos” nas cores da marca: fundos claros em faixas (creme, branco, cinza e amarelo),
-títulos grandes e condensados (fonte Anton), botões em formato de pílula e cartões arredondados com
-contorno preto, adesivos no topo e uma faixa preta rolando no alto da página. Não há sombras nem degradês.
-- As cores ficam no começo de `css/estilo.css`.
-- Os textos da faixa rolante ficam em `faixa`, no `js/conteudo.js`. A nota do Google entra automaticamente.
+Visual claro e confiante nas cores da marca:
+- **Cores:** um preto de marca nos textos e nas seções escuras; o amarelo como destaque no botão principal, no filtro ativo e nos títulos sobre fundo escuro; um creme suave para etiquetas e realces.
+- **Títulos:** Inter Black (900), bem pesados e compactos.
+- **Formas:** botões, menu e etiquetas em formato de pílula; cartões com cantos arredondados.
+- **Seções:** fundos brancos, cinza-claro e creme se alternam com a seção escura das lojas e o cartão escuro de contato.
+- **Personalizar:** as cores ficam no começo de `css/estilo.css`.
 
 ## 4. O que já está pronto
 - 10 seções: topo com nota no Google, sobre, serviços, marcas, portfólio com filtros, lightbox e

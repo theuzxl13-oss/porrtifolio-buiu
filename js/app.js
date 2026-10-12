@@ -136,7 +136,7 @@
   /* --------------------------- faixa rolando --------------------------- */
   var itensFaixa = (C.faixa || []).filter(ok).concat(["Nota " + mediaTxt + " no Google · " + fmtInt(totalAval) + " avaliações"]);
   var trecho = itensFaixa.map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("");
-  $("#faixa").innerHTML = '<div class="faixa__grupo">' + trecho + '</div><div class="faixa__grupo">' + trecho + "</div>";
+  if ($("#faixa")) $("#faixa").innerHTML = '<div class="faixa__grupo">' + trecho + '</div><div class="faixa__grupo">' + trecho + "</div>";
 
   /* ------------------------------- sobre ------------------------------- */
   $("#sobre-texto").innerHTML = C.sobre.paragrafos.filter(ok).map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("");
@@ -157,7 +157,8 @@
   $("#lista-marcas").innerHTML = C.marcas.lista.map(function (m) {
     var usaImg = ok(m.imagem) && m.imagemAutorizada === true;
     return '<li class="marca' + (usaImg ? " marca--img" : "") + '">' +
-      (usaImg ? '<img src="' + esc(m.imagem) + '" alt="' + esc(m.nome) + '" loading="lazy">' : "<span>" + esc(m.nome) + "</span>") +
+      (usaImg ? '<img src="' + esc(m.imagem) + '" alt="' + esc(m.nome) + '" loading="lazy">'
+        : '<span class="marca__inicial" aria-hidden="true">' + esc(m.nome.charAt(0)) + '</span><span class="marca__nome">' + esc(m.nome) + "</span>") +
       "</li>";
   }).join("");
 
