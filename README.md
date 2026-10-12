@@ -56,7 +56,7 @@ topo, sobre, serviços, marcas, portfólio, lojas, depoimentos, perguntas freque
   `<meta name="description">`, porque o Google e o WhatsApp leem essas tags sem executar JavaScript.
 
 ### Depois de qualquer alteração: atualize a versão
-No `index.html`, aumente o número em `?v=1.1.0` (ex.: para `?v=1.1.1`) **em todas as linhas**
+No `index.html`, aumente o número em `?v=1.3.0` (ex.: para `?v=1.3.1`) **em todas as linhas**
 (`estilo.css`, `conteudo.js`, `app.js` e ícones). Assim, quem já visitou o site não continua vendo a
 versão antiga guardada em cache.
 
@@ -89,9 +89,11 @@ As marcas aparecem em cartões só com o nome, sem logotipos. Se um fabricante a
 a imagem em `assets/marcas/`, preencha `imagem` e mude `imagemAutorizada` para `true`.
 
 ## Visual
-Estilo “showroom”: fundos escuros (#202020) alternando com seções brancas e cinza-claro, cantos retos,
-sem sombras, linhas finas como divisórias e títulos em caixa alta (fonte Barlow Condensed). O amarelo
-(#ffc000) fica reservado ao botão principal de cada tela. As cores ficam no começo de `css/estilo.css`.
+Estilo “álbum de adesivos” nas cores da marca: fundos claros em faixas (creme, branco, cinza e amarelo),
+títulos grandes e condensados (fonte Anton), botões em formato de pílula e cartões arredondados com
+contorno preto, adesivos no topo e uma faixa preta rolando no alto da página. Não há sombras nem degradês.
+- As cores ficam no começo de `css/estilo.css`.
+- Os textos da faixa rolante ficam em `faixa`, no `js/conteudo.js`. A nota do Google entra automaticamente.
 
 ## 4. O que já está pronto
 - 10 seções: topo com nota no Google, sobre, serviços, marcas, portfólio com filtros, lightbox e

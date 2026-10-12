@@ -21,23 +21,25 @@
   <meta property="og:image:alt" content="Cardoso Baterias — Bateria nova, instalação na hora">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="icon" href="assets/img/favicon.svg?v=1.2.0" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1.2.0">
+  <link rel="icon" href="assets/img/favicon.svg?v=1.3.0" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=1.3.0">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed&family=Barlow:wght@400;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@500;700&display=swap">
 
   <!-- VERSÃO: ao atualizar CSS/JS/conteúdo, aumente o número em ?v= (ex.: 1.0.1) -->
-  <link rel="stylesheet" href="css/estilo.css?v=1.2.0">
+  <link rel="stylesheet" href="css/estilo.css?v=1.3.0">
 </head>
 <body>
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
+  <div class="faixa" aria-hidden="true"><div class="faixa__trilho" id="faixa"></div></div>
+
   <header class="topo" id="topo">
     <div class="container topo__barra">
       <a class="topo__logo" href="#inicio" aria-label="Cardoso Baterias — início">
-        <img data-logo="escuro" src="assets/img/logo-fundo-escuro.png" alt="Cardoso Baterias" width="132" height="42">
+        <img data-logo="claro" src="assets/img/logo.png" alt="Cardoso Baterias" width="132" height="42">
       </a>
       <button class="topo__menu-btn" type="button" aria-expanded="false" aria-controls="menu-principal">
         <span class="topo__menu-icone" aria-hidden="true"></span>
@@ -53,7 +55,7 @@
           <li><a href="#contato">Contato</a></li>
           <li data-loja-virtual hidden><a href="#" target="_blank" rel="noopener">Loja virtual</a></li>
         </ul>
-        <a class="btn btn--linha btn--pequeno topo__cta" data-whats href="https://wa.me/5511962986718" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn btn--contorno btn--pequeno topo__cta" data-whats href="https://wa.me/5511962986718" target="_blank" rel="noopener">WhatsApp</a>
       </nav>
     </div>
   </header>
@@ -71,19 +73,30 @@
           </h1>
           <p class="hero__sub" data-c="hero.texto"></p>
           <div class="hero__acoes">
-            <a class="btn btn--giallo btn--grande btn--seta" data-whats data-c="hero.botao" href="https://wa.me/5511962986718" target="_blank" rel="noopener">Pedir orçamento no WhatsApp</a>
-            <a class="btn btn--fantasma btn--seta" href="#lojas">Ver lojas</a>
+            <a class="btn btn--primario btn--grande btn--seta" data-whats data-c="hero.botao" href="https://wa.me/5511962986718" target="_blank" rel="noopener">Pedir orçamento no WhatsApp</a>
+            <a class="btn btn--contorno btn--seta" href="#lojas">Ver lojas</a>
           </div>
           <a class="nota-google" id="nota-google" href="#" target="_blank" rel="noopener"></a>
         </div>
         <div class="hero__arte" aria-hidden="true">
-          <svg viewBox="0 0 320 240" class="bateria-svg" fill="none" stroke="#ffffff" stroke-width="2">
-            <rect x="66" y="18" width="44" height="22"/>
-            <rect x="210" y="18" width="44" height="22"/>
-            <rect x="20" y="40" width="280" height="180"/>
-            <line x1="20" y1="80" x2="300" y2="80" stroke="#7d7d7d" stroke-width="1"/>
-            <path d="M80 60h16M88 52v16M224 60h16"/>
-            <path d="M172 100 132 158h28l-10 42 42-60h-28l10-40z"/>
+          <svg class="adesivo adesivo--bateria" viewBox="0 0 220 170">
+            <rect x="40" y="8" width="36" height="22" rx="6" fill="#fff" stroke="#000" stroke-width="3"/>
+            <rect x="144" y="8" width="36" height="22" rx="6" fill="#fff" stroke="#000" stroke-width="3"/>
+            <rect x="8" y="24" width="204" height="138" rx="24" fill="#ffc000" stroke="#000" stroke-width="3"/>
+            <path d="M48 56h20M58 46v20M152 56h20" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+            <path d="M118 70 90 112h20l-8 34 30-46h-20l8-30z" fill="#000"/>
+          </svg>
+          <svg class="adesivo adesivo--raio" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" fill="#000"/>
+            <path d="M56 18 30 56h18l-6 26 26-38H50l6-26z" fill="#ffc000"/>
+          </svg>
+          <svg class="adesivo adesivo--chave" viewBox="0 0 100 100">
+            <rect x="4" y="4" width="92" height="92" rx="22" fill="#fff" stroke="#000" stroke-width="3"/>
+            <path d="M74 30a14 14 0 0 1-18 17L34 69a6 6 0 0 1-9-9l22-22a14 14 0 0 1 17-18l-9 9 2 7 7 2 9-8z" fill="#000"/>
+          </svg>
+          <svg class="adesivo adesivo--estrela" viewBox="0 0 100 100">
+            <rect x="4" y="4" width="92" height="92" rx="46" fill="#fff4cc" stroke="#000" stroke-width="3"/>
+            <path d="m50 20 9 19 21 3-15 15 4 21-19-10-19 10 4-21-15-15 21-3z" fill="#000"/>
           </svg>
         </div>
       </div>
@@ -103,21 +116,21 @@
     </section>
 
     <!-- 3. SERVIÇOS -->
-    <section class="secao secao--escura" id="servicos" aria-labelledby="servicos-titulo">
+    <section class="secao secao--cinza" id="servicos" aria-labelledby="servicos-titulo">
       <div class="container">
         <div class="cabecalho-secao">
           <div>
             <p class="sobretitulo">O que fazemos</p>
             <h2 id="servicos-titulo" class="titulo">Serviços</h2>
           </div>
-          <a class="btn btn--fantasma btn--seta" data-whats href="https://wa.me/5511962986718" target="_blank" rel="noopener">Pedir orçamento</a>
+          <a class="btn btn--contorno btn--seta" data-whats href="https://wa.me/5511962986718" target="_blank" rel="noopener">Pedir orçamento</a>
         </div>
         <ul class="servicos" id="lista-servicos"></ul>
       </div>
     </section>
 
     <!-- 4. MARCAS -->
-    <section class="secao secao--cinza" id="marcas" aria-labelledby="marcas-titulo">
+    <section class="secao secao--amarela" id="marcas" aria-labelledby="marcas-titulo">
       <div class="container">
         <h2 id="marcas-titulo" class="titulo" data-c="marcas.titulo">Marcas que trabalhamos</h2>
         <p class="lead" data-c="marcas.texto"></p>
@@ -138,14 +151,14 @@
     </section>
 
     <!-- 6. LOJAS -->
-    <section class="secao secao--escura" id="lojas" aria-labelledby="lojas-titulo">
+    <section class="secao secao--creme" id="lojas" aria-labelledby="lojas-titulo">
       <div class="container">
         <div class="cabecalho-secao">
           <div>
             <p class="sobretitulo">Nossas lojas</p>
             <h2 id="lojas-titulo" class="titulo">Escolha a unidade mais perto</h2>
           </div>
-          <a class="btn btn--fantasma btn--seta" data-maps href="#" target="_blank" rel="noopener">Ver no Google Maps</a>
+          <a class="btn btn--contorno btn--seta" data-maps href="#" target="_blank" rel="noopener">Ver no Google Maps</a>
         </div>
         <p class="lead lead--claro" id="lojas-resumo"></p>
         <ul class="lojas" id="lista-lojas"></ul>
@@ -153,21 +166,21 @@
     </section>
 
     <!-- 7. DEPOIMENTOS -->
-    <section class="secao secao--cinza" id="depoimentos" aria-labelledby="depoimentos-titulo">
+    <section class="secao secao--clara" id="depoimentos" aria-labelledby="depoimentos-titulo">
       <div class="container">
         <div class="cabecalho-secao">
           <div>
             <p class="sobretitulo">Quem já foi atendido</p>
             <h2 id="depoimentos-titulo" class="titulo">O que dizem no Google</h2>
           </div>
-          <a class="btn btn--fantasma btn--seta" data-maps href="#" target="_blank" rel="noopener">Ver avaliações no Google</a>
+          <a class="btn btn--contorno btn--seta" data-maps href="#" target="_blank" rel="noopener">Ver avaliações no Google</a>
         </div>
         <ul class="depoimentos" id="lista-depoimentos"></ul>
       </div>
     </section>
 
     <!-- 8. FAQ -->
-    <section class="secao secao--clara" id="perguntas" aria-labelledby="faq-titulo">
+    <section class="secao secao--cinza" id="perguntas" aria-labelledby="faq-titulo">
       <div class="container container--estreito">
         <p class="sobretitulo">Dúvidas</p>
         <h2 id="faq-titulo" class="titulo">Perguntas frequentes</h2>
@@ -176,13 +189,13 @@
     </section>
 
     <!-- 9. CONTATO -->
-    <section class="secao secao--escura contato" id="contato" aria-labelledby="contato-titulo">
+    <section class="secao secao--amarela contato" id="contato" aria-labelledby="contato-titulo">
       <div class="container contato__grade">
         <div>
           <p class="sobretitulo">Contato</p>
           <h2 id="contato-titulo" class="titulo" data-c="contato.titulo">Fale com a gente</h2>
           <p class="lead lead--claro" data-c="contato.texto"></p>
-          <a class="btn btn--giallo btn--grande btn--seta" data-whats href="https://wa.me/5511962986718" target="_blank" rel="noopener">
+          <a class="btn btn--primario btn--grande btn--seta" data-whats href="https://wa.me/5511962986718" target="_blank" rel="noopener">
             WhatsApp <span id="whats-exibicao">(11) 96298-6718</span>
           </a>
           <p class="contato__area" id="area-atendida"></p>
@@ -214,6 +227,7 @@
         </ul>
       </div>
     </div>
+    <p class="rodape__marca" aria-hidden="true">Cardoso</p>
     <div class="container rodape__base">
       <p>© <span id="ano"></span> Cardoso Baterias. Todos os direitos reservados.</p>
     </div>
@@ -246,7 +260,7 @@
     <p class="noscript">Para ver todo o conteúdo, ative o JavaScript. Orçamento pelo WhatsApp: <a href="https://wa.me/5511962986718">(11) 96298-6718</a>.</p>
   </noscript>
 
-  <script src="js/conteudo.js?v=1.2.0"></script>
-  <script src="js/app.js?v=1.2.0"></script>
+  <script src="js/conteudo.js?v=1.3.0"></script>
+  <script src="js/app.js?v=1.3.0"></script>
 </body>
 </html>

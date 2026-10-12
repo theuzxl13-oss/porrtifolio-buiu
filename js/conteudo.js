@@ -59,6 +59,16 @@ window.CONTEUDO = {
     buscaMaps: "Cardoso Baterias"
   },
 
+  /* ---------------------- FAIXA QUE ROLA NO TOPO ---------------------- */
+  // A nota do Google e o total de avaliações entram automaticamente.
+  faixa: [
+    "Bateria nova",
+    "Instalação na hora",
+    "Teste de bateria e alternador",
+    "Moura · Heliar · Bosch · Zetta · Pioneiro",
+    "Embu-Guaçu · Cipó · Jardim Ângela"
+  ],
+
   /* --------------------------- TOPO --------------------------- */
   hero: {
     selo: "Baterias automotivas",

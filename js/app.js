@@ -133,6 +133,11 @@
     '<small>Consulta em ' + esc(dataConsulta) + "</small></span>";
   nota.setAttribute("aria-label", "Nota " + mediaTxt + " de 5 no Google, " + totalAval + " avaliações em " + lojas.length + " lojas, consulta em " + dataConsulta + " (abre o Google Maps)");
 
+  /* --------------------------- faixa rolando --------------------------- */
+  var itensFaixa = (C.faixa || []).filter(ok).concat(["Nota " + mediaTxt + " no Google · " + fmtInt(totalAval) + " avaliações"]);
+  var trecho = itensFaixa.map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("");
+  $("#faixa").innerHTML = '<div class="faixa__grupo">' + trecho + '</div><div class="faixa__grupo">' + trecho + "</div>";
+
   /* ------------------------------- sobre ------------------------------- */
   $("#sobre-texto").innerHTML = C.sobre.paragrafos.filter(ok).map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("");
   $("#diferenciais").innerHTML = C.sobre.diferenciais.map(function (d) {
@@ -144,7 +149,7 @@
   $("#lista-servicos").innerHTML = C.servicos.map(function (s) {
     return '<li class="servico">' + icone(s.icone, "servico__icone") +
       "<h3>" + esc(s.titulo) + "</h3><p>" + esc(s.texto) + "</p>" +
-      '<a class="btn btn--fantasma btn--seta" href="' + esc(linkWhats(s.mensagem)) + '" target="_blank" rel="noopener" aria-label="Agendar ' + esc(s.titulo.toLowerCase()) + ' pelo WhatsApp">' +
+      '<a class="btn btn--contorno btn--seta" href="' + esc(linkWhats(s.mensagem)) + '" target="_blank" rel="noopener" aria-label="Agendar ' + esc(s.titulo.toLowerCase()) + ' pelo WhatsApp">' +
       "Agendar pelo WhatsApp</a></li>";
   }).join("");
 
@@ -302,9 +307,9 @@
   }
   function botoesLoja(l) {
     return '<div class="loja__botoes">' +
-      '<a class="btn btn--branco" href="' + esc(linkWhats(mensagemLoja(l), l.whatsapp)) + '" target="_blank" rel="noopener" aria-label="WhatsApp da unidade ' + esc(l.apelido) + '">' + icone("whats", "icone icone--btn") + "WhatsApp</a>" +
-      (ok(l.telefone) ? '<a class="btn btn--linha" href="' + linkTel(l.telefone) + '" aria-label="Ligar para a unidade ' + esc(l.apelido) + ": " + esc(l.telefone) + '">' + icone("telefone", "icone icone--btn") + "Ligar</a>" : "") +
-      '<a class="btn btn--linha" href="' + esc(linkMaps(l)) + '" target="_blank" rel="noopener" aria-label="Como chegar à unidade ' + esc(l.apelido) + ' (abre o Google Maps)">' + icone("pino", "icone icone--btn") + "Como chegar</a>" +
+      '<a class="btn btn--primario" href="' + esc(linkWhats(mensagemLoja(l), l.whatsapp)) + '" target="_blank" rel="noopener" aria-label="WhatsApp da unidade ' + esc(l.apelido) + '">' + icone("whats", "icone icone--btn") + "WhatsApp</a>" +
+      (ok(l.telefone) ? '<a class="btn btn--contorno" href="' + linkTel(l.telefone) + '" aria-label="Ligar para a unidade ' + esc(l.apelido) + ": " + esc(l.telefone) + '">' + icone("telefone", "icone icone--btn") + "Ligar</a>" : "") +
+      '<a class="btn btn--contorno" href="' + esc(linkMaps(l)) + '" target="_blank" rel="noopener" aria-label="Como chegar à unidade ' + esc(l.apelido) + ' (abre o Google Maps)">' + icone("pino", "icone icone--btn") + "Como chegar</a>" +
       "</div>";
   }
 
@@ -390,7 +395,7 @@
       ents.forEach(function (en) { if (en.isIntersecting) visiveisAlvos.add(en.target); else visiveisAlvos.delete(en.target); });
       fab.classList.toggle("whats-flutuante--oculto", visiveisAlvos.size > 0);
     });
-    [".hero__acoes", "#contato .btn--giallo", ".rodape"].forEach(function (s) { var el = $(s); if (el) io.observe(el); });
+    [".hero__acoes", "#contato .btn--primario", ".rodape"].forEach(function (s) { var el = $(s); if (el) io.observe(el); });
   }
 
   /* ------------------- dados estruturados (schema.org) ------------------- */
