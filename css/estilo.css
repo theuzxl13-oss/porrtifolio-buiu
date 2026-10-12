@@ -185,13 +185,18 @@ main:focus { outline: none; }
 /* ilustração: raio com bordas em brasa */
 .hero__arte { position: relative; width: min(90%, 360px); justify-self: center; margin-top: -24px; }
 .ilustra--raio { width: 100%; height: auto; overflow: visible; transform: rotate(6deg); }
-/* raio em imagem: o fundo escuro some com "screen" e as bordas se dissolvem no fundo */
+/* raio em imagem (fundo já transparente no arquivo): brilho vivo atrás e flutuação suave */
 .ilustra--foto {
-  width: 100%; height: auto; display: block; mix-blend-mode: screen;
-  filter: contrast(1.18) brightness(1.04);   /* zera o fundo escuro da imagem */
-  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
-          mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+  position: relative; z-index: 1; width: 100%; height: auto; display: block;
+  animation: raio-flutua 7s ease-in-out infinite;
 }
+.hero__arte--foto::before {
+  content: ""; position: absolute; z-index: 0; left: 18%; right: 18%; top: 14%; bottom: 22%;
+  border-radius: 50%; background: radial-gradient(closest-side, rgba(255,90,20,.42), rgba(255,40,0,.12) 60%, transparent);
+  filter: blur(24px); animation: raio-respira 3.6s ease-in-out infinite; pointer-events: none;
+}
+@keyframes raio-flutua { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(-.6deg); } }
+@keyframes raio-respira { 0%, 100% { opacity: .55; transform: scale(.96); } 50% { opacity: 1; transform: scale(1.04); } }
 .raio__halo { animation: raio-pulsa 4s ease-in-out infinite; }
 .raio__faisca { animation: raio-faisca 2.6s steps(1) infinite; }
 @keyframes raio-pulsa { 0%, 100% { opacity: .18; } 50% { opacity: .32; } }

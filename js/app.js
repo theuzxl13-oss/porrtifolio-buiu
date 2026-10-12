@@ -139,7 +139,7 @@
       raio.alt = "";
       raio.setAttribute("aria-hidden", "true");
       var svg = $(".ilustra--raio");
-      if (svg) svg.replaceWith(raio);
+      if (svg) { svg.parentNode.classList.add("hero__arte--foto"); svg.replaceWith(raio); }
     };
     if (ok(C.hero.imagemRaioCelular)) {
       raio.srcset = C.hero.imagemRaioCelular + " 520w, " + C.hero.imagemRaio + " 800w";
