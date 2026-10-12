@@ -56,7 +56,7 @@ topo, sobre, serviços, marcas, portfólio, lojas, depoimentos, perguntas freque
   `<meta name="description">`, porque o Google e o WhatsApp leem essas tags sem executar JavaScript.
 
 ### Depois de qualquer alteração: atualize a versão
-No `index.html`, aumente o número em `?v=1.5.0` (ex.: para `?v=1.5.1`) **em todas as linhas**
+No `index.html`, aumente o número em `?v=1.7.0` (ex.: para `?v=1.7.1`) **em todas as linhas**
 (`estilo.css`, `conteudo.js`, `app.js` e ícones). Assim, quem já visitou o site não continua vendo a
 versão antiga guardada em cache.
 
@@ -89,12 +89,15 @@ As marcas aparecem em cartões só com o nome, sem logotipos. Se um fabricante a
 a imagem em `assets/marcas/`, preencha `imagem` e mude `imagemAutorizada` para `true`.
 
 ## Visual
-Tema escuro, como uma oficina à noite, nas cores da marca:
-- **Fundo e painéis:** preto quente; os cartões ficam um degrau mais claros, com contorno fino e um fio âmbar embaixo.
-- **Títulos:** Inter leve (peso 300).
-- **Amarelo:** um degradê amarelo-âmbar (“brasa”) aparece só no botão principal e no botão flutuante do WhatsApp.
-- **Brilhos:** brilhos âmbar bem suaves no topo, na galeria e no rodapé.
-- **Personalizar:** as cores ficam no começo de `css/estilo.css`.
+Segue a referência de estilo do n8n:
+- **Fundo e superfícies:** fundo violeta quase preto (#0e0918), cartões #1a1624 e painéis #1b1728, com um degrau de cor entre eles e sem sombras externas.
+- **Fonte:** DM Sans, a substituta da geomanist. Títulos em peso 300, com altura de linha 0,88; textos em #d1cece.
+- **Degradês:** o laranja→vermelho (“Ember”) aparece só nos botões principais; o azul→violeta (“Electric Current”) sublinha os links e marca o foco do teclado.
+- **Cartões de destaque:** contorno interno branco a 10% com um fio laranja.
+- **Brilhos de fundo:** um brilho quente quase imperceptível nas seções e um brilho rosado no rodapé.
+- **Imagem principal:** um raio laranja-vermelho com brilho no topo.
+
+As cores ficam no começo de `css/estilo.css`.
 
 ## 4. O que já está pronto
 - 10 seções: topo com nota no Google, sobre, serviços, marcas, portfólio com filtros, lightbox e
