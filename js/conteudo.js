@@ -62,7 +62,8 @@ window.CONTEUDO = {
   /* ---------------------- FAIXA QUE ROLA NO TOPO ---------------------- */
   // A nota do Google e o total de avaliações entram automaticamente.
   faixa: [
-    "Bateria nova",
+    "Especialistas em baterias e geradores",
+    "Entrega rápida e instalação",
     "Instalação na hora",
     "Teste de bateria e alternador",
     "Moura · Heliar · Bosch · Zetta · Pioneiro",
@@ -71,10 +72,10 @@ window.CONTEUDO = {
 
   /* --------------------------- TOPO --------------------------- */
   hero: {
-    selo: "Baterias automotivas",
+    selo: "Especialistas em baterias e geradores",
     titulo: "Bateria nova,",
     tituloDestaque: "instalação na hora.",
-    texto: "Teste de bateria e alternador, instalação e atendimento rápido em 3 unidades na região de Embu-Guaçu e Zona Sul de São Paulo.",
+    texto: "Entrega rápida e instalação, com teste de bateria e alternador. Lojas em Embu-Guaçu, Jd. Ângela e Cipó.",
     botao: "Pedir orçamento no WhatsApp",
     imagem: "",  // foto de fundo opcional, ex.: "assets/fotos/hero.jpg"
     // Ilustração do raio. Se o arquivo não existir, o site usa o raio desenhado em código.
@@ -87,13 +88,13 @@ window.CONTEUDO = {
   sobre: {
     titulo: "Quem somos",
     paragrafos: [
-      "A Cardoso Baterias é especializada em baterias automotivas, com unidades em Embu-Guaçu, no Cipó e no Jardim Ângela (São Paulo - SP).",
+      "A Cardoso Baterias é especialista em baterias e geradores, com lojas em Embu-Guaçu, no Jardim Ângela e no Cipó. Fazemos entrega rápida e instalação.",
       "Antes de trocar, a gente testa: a bateria e o alternador são verificados para indicar a solução certa para o seu veículo — sem empurrar peça desnecessária. Trabalhamos com marcas reconhecidas e fazemos a instalação na hora."
     ],
     diferenciais: [
       { icone: "teste",      titulo: "Teste de bateria e alternador", texto: "Diagnóstico antes da troca para saber se o problema é mesmo a bateria." },
       { icone: "ferramenta", titulo: "Instalação na hora",            texto: "Você sai com a bateria nova instalada e o carro funcionando." },
-      { icone: "relogio",    titulo: "Atendimento rápido",            texto: "Atendimento direto, com orientação clara e orçamento pelo WhatsApp." },
+      { icone: "entrega",    titulo: "Entrega rápida",                texto: "Levamos a bateria até você. Consulte o horário de entregas da sua unidade." },
       { icone: "loja",       titulo: "Várias unidades",               texto: "Três lojas para você escolher a mais perto: Embu-Guaçu, Cipó e Jardim Ângela." }
     ]
   },
@@ -118,6 +119,18 @@ window.CONTEUDO = {
       titulo: "Teste de bateria e alternador",
       texto: "Descubra se o problema é a bateria, o alternador ou outro ponto antes de gastar.",
       mensagem: "Olá! Vim pelo site da Cardoso Baterias e gostaria de agendar um TESTE DE BATERIA E ALTERNADOR. Meu veículo é [marca/modelo/ano]."
+    },
+    {
+      icone: "entrega",
+      titulo: "Entrega rápida",
+      texto: "Entregamos a bateria e fazemos a instalação. Consulte o horário de entregas da unidade mais perto.",
+      mensagem: "Olá! Vim pelo site da Cardoso Baterias e gostaria de pedir uma ENTREGA DE BATERIA. Meu veículo é [marca/modelo/ano] e estou no bairro [bairro]."
+    },
+    {
+      icone: "gerador",
+      titulo: "Baterias e geradores",
+      texto: "Também somos especialistas em geradores. Fale com a gente para saber mais.",
+      mensagem: "Olá! Vim pelo site da Cardoso Baterias e gostaria de informações sobre GERADORES."
     },
     {
       icone: "conversa",
@@ -292,6 +305,14 @@ window.CONTEUDO = {
       resposta: "Moura, Heliar, Bosch, Zetta e Pioneiro. A disponibilidade varia conforme o modelo do veículo — consulte pelo WhatsApp."
     },
     {
+      pergunta: "Vocês fazem entrega?",
+      resposta: "Sim, fazemos entrega rápida e instalação. As entregas saem das unidades de Embu-Guaçu e Jardim Ângela, das 9h às 17h. Chame no WhatsApp com o seu endereço."
+    },
+    {
+      pergunta: "Vocês trabalham com geradores?",
+      resposta: "Sim, somos especialistas em baterias e geradores. Fale com a gente pelo WhatsApp para saber mais."
+    },
+    {
       pergunta: "Quanto custa uma bateria nova?",
       resposta: "Depende do veículo e da bateria indicada. Mande a marca, o modelo e o ano do carro pelo WhatsApp e receba o orçamento."
     },
@@ -304,6 +325,6 @@ window.CONTEUDO = {
   /* -------------------------- CONTATO -------------------------- */
   contato: {
     titulo: "Fale com a gente",
-    texto: "Mande a marca, o modelo e o ano do seu veículo e receba o orçamento pelo WhatsApp."
+    texto: "Entre em contato e solicite seu orçamento. Mande a marca, o modelo e o ano do seu veículo pelo WhatsApp."
   }
 };
