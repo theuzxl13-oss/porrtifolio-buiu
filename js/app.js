@@ -4,6 +4,14 @@
   "use strict";
 
   var C = window.CONTEUDO;
+  // Prévia do painel /admin: usa o rascunho salvo no navegador (?previa=1)
+  var previa = /[?&]previa=1\b/.test(location.search);
+  if (previa) {
+    try {
+      var rascunho = JSON.parse(localStorage.getItem("cardoso-previa") || "null");
+      if (rascunho && typeof rascunho === "object") C = rascunho; else previa = false;
+    } catch (e) { previa = false; }
+  }
   if (!C) return;
 
   var PENDENTE = "[a confirmar]";
@@ -559,6 +567,14 @@
   ld.type = "application/ld+json";
   ld.textContent = JSON.stringify({ "@context": "https://schema.org", "@graph": grafo });
   document.head.appendChild(ld);
+
+  if (previa) {
+    var faixaPrevia = document.createElement("div");
+    faixaPrevia.className = "faixa-previa";
+    faixaPrevia.setAttribute("role", "status");
+    faixaPrevia.textContent = "Prévia do painel — estas mudanças ainda não foram publicadas.";
+    document.body.prepend(faixaPrevia);
+  }
 
   /* --------------------------- modo revisão --------------------------- */
   if (revisao) {

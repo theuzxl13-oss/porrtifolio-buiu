@@ -36,9 +36,27 @@ do `index.html`. Elas controlam a prévia que aparece quando o link é compartil
 Você pode abrir o `index.html` direto no navegador. Para simular o GitHub Pages, rode na pasta acima
 do projeto `python3 -m http.server 8000` e acesse `http://localhost:8000/porrtifolio-buiu/`.
 
+## Painel de administração (recomendado)
+O site tem um painel em **`/admin`**: https://theuzxl13-oss.github.io/porrtifolio-buiu/admin/
+
+Pelo painel você muda **tudo**: textos do topo, quem somos, serviços, galeria (com envio de fotos e antes e depois), lojas (endereço, horários, WhatsApp, avaliações), marcas, depoimentos, perguntas frequentes, contato e logo. As fotos são reduzidas automaticamente antes do envio.
+
+**Primeiro acesso (uma vez só): criar a chave de acesso do GitHub**
+1. No GitHub, clique na sua foto → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
+2. Dê um nome (ex.: “Painel do site”) e escolha a validade (ex.: 1 ano).
+3. Em **Repository access**, marque **Only select repositories** e escolha `porrtifolio-buiu`.
+4. Em **Permissions → Repository permissions → Contents**, escolha **Read and write**.
+5. Clique em **Generate token**, copie a chave, abra o painel → **Configurações**, cole e clique em **Salvar e testar conexão**.
+
+**Uso do dia a dia:** altere os campos → **Prévia** (opcional) → **Salvar e publicar**. Em cerca de 1 minuto o site atualiza.
+
+- A chave fica guardada só no navegador onde você colou. Não compartilhe; se vazar, apague-a no GitHub e gere outra.
+- O painel grava na branch configurada em **Configurações**, que é a mesma publicada no GitHub Pages. Se um dia o site passar a ser publicado da `main`, troque lá.
+- O painel não aparece no Google (está marcado para não ser indexado).
+
 ## 2. Como editar o conteúdo
 
-Edite **somente** o `js/conteudo.js`. Ele tem comentários explicando cada bloco: empresa, logo, WhatsApp,
+Sem o painel, edite **somente** o `js/conteudo.js`. Ele tem comentários explicando cada bloco: empresa, logo, WhatsApp,
 topo, sobre, serviços, marcas, portfólio, lojas, depoimentos, perguntas frequentes e contato.
 
 - Mantenha as aspas `"..."` e as vírgulas. Se o site ficar em branco depois de uma edição,
@@ -65,7 +83,7 @@ Em `lojas`, cada loja tem `endereco`, `bairro`, `cidade`, `uf` e `enderecoMapa` 
 Salve a imagem (de preferência `.webp`, com até ~300 KB) em `assets/img/` e preencha `hero.imagemRaio`, por exemplo `"assets/img/raio.webp"`. O fundo escuro da imagem se funde ao fundo do site. Com o campo vazio, o site usa o raio desenhado em código.
 
 ### Depois de qualquer alteração: atualize a versão
-No `index.html`, aumente o número em `?v=1.8.0` (ex.: para `?v=1.8.1`) **em todas as linhas**
+No `index.html`, aumente o número em `?v=1.11.0` (ex.: para `?v=1.11.1`) **em todas as linhas**
 (`estilo.css`, `conteudo.js`, `app.js` e ícones). Assim, quem já visitou o site não continua vendo a
 versão antiga guardada em cache.
 
