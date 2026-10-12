@@ -87,6 +87,9 @@ window.CONTEUDO = {
   /* --------------------------- SOBRE -------------------------- */
   sobre: {
     titulo: "Quem somos",
+    // Vídeo de destaque (opcional). Preencha UM: "video" (arquivo em assets/videos/),
+    // "youtube" (link do vídeo) ou "instagram" (link do Reel). "capa" é a imagem antes do play.
+    video: { titulo: "", video: "", youtube: "", instagram: "", capa: "" },
     paragrafos: [
       "A Cardoso Baterias é especialista em baterias e geradores, com lojas em Embu-Guaçu, no Jardim Ângela e no Cipó. Fazemos entrega rápida e instalação.",
       "Antes de trocar, a gente testa: a bateria e o alternador são verificados para indicar a solução certa para o seu veículo — sem empurrar peça desnecessária. Trabalhamos com marcas reconhecidas e fazemos a instalação na hora."
@@ -162,6 +165,8 @@ window.CONTEUDO = {
   // Foto simples: preencha "foto".
   // Antes e depois: preencha "antes" e "depois" (deixe "foto" vazio).
   // Deixe vazio ("") para mostrar o marcador "Foto ilustrativa — substituir".
+  // Vídeo: use tipo: "video" e preencha "video" (arquivo .mp4 em assets/videos/),
+  // "youtube" ou "instagram" (link), e opcionalmente "capa" (imagem) e vertical: true.
   portfolio: {
     titulo: "Trabalhos realizados",
     texto: "Alguns dos serviços feitos nas nossas lojas.",

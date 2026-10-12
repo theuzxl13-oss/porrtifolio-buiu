@@ -79,11 +79,19 @@ Em `lojas`, cada loja tem `endereco`, `bairro`, `cidade`, `uf` e `enderecoMapa` 
 - **Status:** o site calcula sozinho, no horário de São Paulo, se a loja está “Aberta até 18h” ou “Fechada · abre às…”.
 - **Linhas só informativas** (feriados, entregas): use `texto`. `destaque: true` deixa o horário em laranja.
 
+### Vídeos
+Dá para colocar vídeos **na galeria** (escolha o tipo “Vídeo”) e **um vídeo de destaque em “Quem somos”**. O jeito mais fácil é pelo painel `/admin`.
+- **Vídeo curto próprio** (15–30 s, até 25 MB, ideal até 10 MB): envie o arquivo MP4 pelo painel. Ele fica em `assets/videos/`.
+- **Vídeo longo:** publique no YouTube e cole o link. Do Instagram, cole o link do Reel.
+- **Carregamento:** o vídeo só carrega quando a pessoa toca no play. Antes disso aparece a capa, que pode ser uma imagem sua, a capa do YouTube ou um quadro do próprio vídeo. Assim o site continua leve.
+- **Vídeo gravado em pé:** marque “Vídeo em pé” para ele abrir no formato vertical.
+- **Vídeo grande demais:** pode me mandar que eu comprimo, mantendo a qualidade.
+
 ### Raio do topo em imagem
 Salve a imagem (de preferência `.webp`, com até ~300 KB) em `assets/img/` e preencha `hero.imagemRaio`, por exemplo `"assets/img/raio.webp"`. O fundo escuro da imagem se funde ao fundo do site. Com o campo vazio, o site usa o raio desenhado em código.
 
 ### Depois de qualquer alteração: atualize a versão
-No `index.html`, aumente o número em `?v=1.11.0` (ex.: para `?v=1.11.1`) **em todas as linhas**
+No `index.html`, aumente o número em `?v=1.13.0` (ex.: para `?v=1.13.1`) **em todas as linhas**
 (`estilo.css`, `conteudo.js`, `app.js` e ícones). Assim, quem já visitou o site não continua vendo a
 versão antiga guardada em cache.
 

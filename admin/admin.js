@@ -161,7 +161,7 @@
       for (const [caminho, foto] of fotosPendentes) {
         n++;
         status("Enviando foto " + n + " de " + fotosPendentes.size + "…");
-        await gravarArquivoApi(caminho, foto.base64, "Painel: envia foto " + caminho.split("/").pop());
+        await gravarArquivoApi(caminho, foto.base64, "Painel: envia arquivo " + caminho.split("/").pop());
       }
       status("Publicando conteúdo…");
       const r = await gravarArquivoApi(ARQUIVO, utf8ParaBase64(gerarArquivo(dados)), "Painel: atualiza o conteúdo do site", shaConteudo);
@@ -275,6 +275,14 @@
           { k: "titulo", rotulo: "Título" },
           { k: "texto", rotulo: "Texto", tipo: "textarea" }
         ] }
+      ] },
+      { raiz: "sobre.video", titulo: "Vídeo de destaque (opcional)", campos: [
+        { k: "titulo", rotulo: "Título sobre o vídeo", dica: "Ex.: Conheça a Cardoso Baterias" },
+        { k: "video", rotulo: "Arquivo de vídeo (MP4, até 25 MB)", tipo: "video" },
+        { k: "youtube", rotulo: "Ou link do YouTube", tipo: "url" },
+        { k: "instagram", rotulo: "Ou link do Reel do Instagram", tipo: "url" },
+        { k: "capa", rotulo: "Imagem de capa (opcional)", tipo: "imagem" },
+        { k: "vertical", rotulo: "Vídeo em pé (gravado na vertical)", tipo: "check" }
       ] }]
     },
     {
@@ -297,8 +305,13 @@
           { k: "titulo", rotulo: "Título" },
           { k: "categoria", rotulo: "Categoria", tipo: "select", opcoes: () => (dados.portfolio.categorias || []).map((c) => [c.id, c.nome]) },
           { k: "descricao", rotulo: "Descrição", tipo: "textarea" },
-          { k: "tipo", rotulo: "Tipo", tipo: "select", opcoes: [["", "Foto simples"], ["antesDepois", "Antes e depois"]], refaz: true },
-          { k: "foto", rotulo: "Foto", tipo: "imagem", mostrarSe: (i) => i.tipo !== "antesDepois" },
+          { k: "tipo", rotulo: "Tipo", tipo: "select", opcoes: [["", "Foto simples"], ["antesDepois", "Antes e depois"], ["video", "Vídeo"]], refaz: true },
+          { k: "foto", rotulo: "Foto", tipo: "imagem", mostrarSe: (i) => !i.tipo },
+          { k: "video", rotulo: "Arquivo de vídeo (MP4, até 25 MB)", tipo: "video", mostrarSe: (i) => i.tipo === "video", dica: "Vídeos curtos (15–30 s) funcionam melhor. Para vídeos maiores, use o YouTube." },
+          { k: "youtube", rotulo: "Ou link do YouTube", tipo: "url", mostrarSe: (i) => i.tipo === "video", dica: "Ex.: https://youtu.be/... ou https://youtube.com/shorts/..." },
+          { k: "instagram", rotulo: "Ou link do Reel do Instagram", tipo: "url", mostrarSe: (i) => i.tipo === "video", dica: "Ex.: https://www.instagram.com/reel/..." },
+          { k: "capa", rotulo: "Imagem de capa (opcional)", tipo: "imagem", mostrarSe: (i) => i.tipo === "video", dica: "Aparece antes do play. Sem capa, o site usa um quadro do vídeo ou a capa do YouTube." },
+          { k: "vertical", rotulo: "Vídeo em pé (gravado na vertical)", tipo: "check", mostrarSe: (i) => i.tipo === "video" },
           { k: "antes", rotulo: "Foto de ANTES", tipo: "imagem", mostrarSe: (i) => i.tipo === "antesDepois" },
           { k: "depois", rotulo: "Foto de DEPOIS", tipo: "imagem", mostrarSe: (i) => i.tipo === "antesDepois" },
           { k: "alt", rotulo: "Descrição da foto para acessibilidade", dica: "O que aparece na foto. Ex.: “Bateria Moura instalada em um Onix”." }
@@ -450,6 +463,7 @@
       return el("div", { class: "campo" }, el("label", { for: id, text: c.rotulo }), sel, dica);
     }
     if (tipo === "imagem") return montarImagem(c, obj, id, dica, desc, mudar);
+    if (tipo === "video") return montarVideo(c, obj, id, dica, desc, mudar);
 
     let inp;
     if (tipo === "textarea") inp = el("textarea", { id, rows: 3, "aria-describedby": desc });
@@ -499,6 +513,49 @@
             el("button", { type: "button", class: "botao botao--perigo botao--mini", onclick: () => { mudar(""); atualizar(); } }, "Remover"),
             arquivo),
           pendente, dica)));
+  }
+
+  function montarVideo(c, obj, id, dica, desc, mudar) {
+    const caminho = el("input", { type: "text", id, placeholder: "assets/videos/nome-do-video.mp4", "aria-describedby": desc });
+    const previa = el("video", { class: "video-previa", controls: true, playsinline: true, preload: "metadata", muted: true });
+    const pendente = el("span", { class: "imagem__pendente" });
+    const arquivo = el("input", { type: "file", accept: "video/mp4,video/webm,video/quicktime", hidden: true });
+    const atualizar = () => {
+      const v = obj[c.k] || "";
+      caminho.value = v;
+      const url = urlPrevia(v);
+      previa.hidden = !url;
+      if (url && previa.getAttribute("src") !== url) previa.src = url;
+      pendente.textContent = fotosPendentes.has(v) ? "Novo vídeo — será enviado ao salvar" : "";
+    };
+    caminho.addEventListener("change", () => { mudar(caminho.value.trim()); atualizar(); });
+    arquivo.addEventListener("change", () => {
+      const f = arquivo.files && arquivo.files[0];
+      if (!f) return;
+      const mb = f.size / 1048576;
+      if (mb > 25) { aviso("Vídeo com " + mb.toFixed(0) + " MB: o limite é 25 MB. Corte ou comprima o vídeo, ou publique no YouTube e cole o link.", true); arquivo.value = ""; return; }
+      pendente.textContent = "Lendo vídeo…";
+      const leitor = new FileReader();
+      leitor.onload = () => {
+        const dataUrl = String(leitor.result);
+        const ext = (f.name.match(/\.(mp4|webm|mov)$/i) || [, "mp4"])[1].toLowerCase();
+        const caminhoNovo = "assets/videos/" + slug(f.name) + "-" + Date.now().toString(36) + "." + ext;
+        fotosPendentes.set(caminhoNovo, { base64: dataUrl.split(",")[1], dataUrl: URL.createObjectURL(f) });
+        mudar(caminhoNovo); atualizar();
+        if (mb > 10) aviso("Vídeo com " + mb.toFixed(0) + " MB: vai funcionar, mas pode demorar a carregar no celular. Ideal: até 10 MB.");
+      };
+      leitor.onerror = () => { aviso("Não foi possível ler o vídeo.", true); atualizar(); };
+      leitor.readAsDataURL(f);
+      arquivo.value = "";
+    });
+    atualizar();
+    return el("div", { class: "campo" },
+      el("label", { for: id, text: c.rotulo }), previa, caminho,
+      el("div", { class: "imagem__acoes" },
+        el("button", { type: "button", class: "botao botao--fantasma botao--mini", onclick: () => arquivo.click() }, "Enviar vídeo"),
+        el("button", { type: "button", class: "botao botao--perigo botao--mini", onclick: () => { mudar(""); atualizar(); } }, "Remover"),
+        arquivo),
+      pendente, dica);
   }
 
   function montarTextos(c, obj) {
@@ -583,7 +640,7 @@
     if (s.especial === "inicio") ed.append(montarInicio());
     else if (s.especial === "config") ed.append(montarConfig());
     else s.grupos.forEach((g) => {
-      const alvo = g.raiz ? (dados[g.raiz] = dados[g.raiz] || {}) : dados;
+      const alvo = g.raiz ? g.raiz.split(".").reduce((o, k) => (o[k] = (o[k] && typeof o[k] === "object") ? o[k] : {}), dados) : dados;
       const cartao = el("section", { class: "cartao" });
       if (g.titulo) cartao.append(el("h2", { text: g.titulo }));
       g.campos.forEach((c) => { const n = montarCampo(c, alvo); if (n) cartao.append(n); });

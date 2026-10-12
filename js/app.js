@@ -132,6 +132,85 @@
     $(".hero__fundo").style.backgroundImage = "linear-gradient(90deg,rgba(11,11,12,.92) 30%,rgba(11,11,12,.55)),url('" + C.hero.imagem + "')";
     $(".hero").classList.add("hero--foto");
   }
+  /* Descargas elétricas desenhadas ao vivo na ponta do raio (canvas).
+     Pontos relativos à imagem do raio: topo (faíscas) e ponta de baixo. */
+  function descargasEletricas(palco) {
+    if (!window.HTMLCanvasElement || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
+    var cv = document.createElement("canvas");
+    cv.className = "raio-eletrico";
+    cv.setAttribute("aria-hidden", "true");
+    palco.appendChild(cv);
+    var ctx = cv.getContext("2d"), dpr = Math.min(window.devicePixelRatio || 1, 2), W = 0, H = 0;
+    var TOPO = { x: 0.785, y: 0.085 }, PONTA = { x: 0.335, y: 0.865 };
+    var arcos = [], visivel = true, proximo = 0;
+    function medir() {
+      W = palco.clientWidth; H = palco.clientHeight;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function caminho(x, y, ang, comp, nivel) {
+      var pts = [[x, y]], passos = 7 + Math.floor(Math.random() * 6), seg = comp / passos;
+      for (var i = 1; i <= passos; i++) {
+        ang += (Math.random() - 0.5) * 0.9;
+        x += Math.cos(ang) * seg; y += Math.sin(ang) * seg;
+        pts.push([x, y]);
+      }
+      var ramos = [];
+      if (nivel < 2) {
+        for (var j = 2; j < pts.length - 1; j++) {
+          if (Math.random() < 0.28) ramos.push(caminho(pts[j][0], pts[j][1], ang + (Math.random() - 0.5) * 1.6, comp * (0.25 + Math.random() * 0.3), nivel + 1));
+        }
+      }
+      return { pts: pts, ramos: ramos, nivel: nivel };
+    }
+    function disparar(agora) {
+      var escala = W / 520;
+      var n = 1 + Math.floor(Math.random() * 3);
+      for (var i = 0; i < n; i++) {
+        var ang = -Math.PI / 2 + (Math.random() - 0.2) * 1.8; // para cima e para a direita
+        arcos.push({ a: caminho(TOPO.x * W, TOPO.y * H, ang, (50 + Math.random() * 110) * escala, 0), nasce: agora, vida: 90 + Math.random() * 160, cor: "150,200,255" });
+      }
+      if (Math.random() < 0.35) {
+        arcos.push({ a: caminho(PONTA.x * W, PONTA.y * H, Math.PI / 2 + (Math.random() - 0.5) * 2.4, (18 + Math.random() * 40) * escala, 1), nasce: agora, vida: 80 + Math.random() * 100, cor: "255,170,90" });
+      }
+      proximo = agora + 260 + Math.random() * (Math.random() < 0.3 ? 1800 : 700);
+    }
+    function tracar(r, alfa, cor) {
+      ctx.beginPath();
+      r.pts.forEach(function (p, i) { i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); });
+      var larg = r.nivel === 0 ? 2.2 : r.nivel === 1 ? 1.3 : 0.8;
+      ctx.shadowColor = "rgba(" + cor + "," + alfa + ")"; ctx.shadowBlur = 14;
+      ctx.strokeStyle = "rgba(" + cor + "," + (alfa * 0.9) + ")"; ctx.lineWidth = larg * 2.4; ctx.stroke();
+      ctx.shadowBlur = 0; ctx.strokeStyle = "rgba(255,255,255," + alfa + ")"; ctx.lineWidth = larg; ctx.stroke();
+      r.ramos.forEach(function (b) { tracar(b, alfa * 0.8, cor); });
+    }
+    function quadro(agora) {
+      if (!visivel) return;
+      requestAnimationFrame(quadro);
+      if (agora >= proximo) disparar(agora);
+      ctx.clearRect(0, 0, W, H);
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      arcos = arcos.filter(function (ar) { return agora - ar.nasce < ar.vida; });
+      arcos.forEach(function (ar) {
+        var t = (agora - ar.nasce) / ar.vida;
+        var alfa = (1 - t) * (Math.random() < 0.25 ? 0.45 : 1); // tremulação
+        tracar(ar.a, alfa, ar.cor);
+      });
+    }
+    medir();
+    window.addEventListener("resize", medir);
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (ents) {
+        var v = ents[0].isIntersecting && !document.hidden;
+        if (v && !visivel) { visivel = true; requestAnimationFrame(quadro); } else if (!v) visivel = false;
+      }).observe(palco);
+    }
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) visivel = false; else if (!visivel) { visivel = true; requestAnimationFrame(quadro); }
+    });
+    requestAnimationFrame(quadro);
+  }
+
   if (ok(C.hero.imagemRaio)) {
     var raio = new Image();
     raio.onload = function () {
@@ -142,7 +221,10 @@
       if (svg) {
         var arte = svg.parentNode;
         arte.classList.add("hero__arte--foto");
-        svg.replaceWith(raio);
+        var palco = document.createElement("div");
+        palco.className = "raio-palco";
+        svg.replaceWith(palco);
+        palco.appendChild(raio);
         // fagulhas que sobem do raio (só decoração)
         for (var f = 0; f < 14; f++) {
           var fg = document.createElement("span");
@@ -156,6 +238,7 @@
           fg.style.setProperty("--desvio", ((Math.random() - .5) * 60).toFixed(0) + "px");
           arte.appendChild(fg);
         }
+        descargasEletricas(palco);
       }
     };
     if (ok(C.hero.imagemRaioCelular)) {
@@ -188,6 +271,20 @@
       "<div><h3>" + esc(d.titulo) + "</h3><p>" + esc(d.texto) + "</p></div></li>";
   }).join("");
 
+  var videoSobre = infoVideo(C.sobre.video);
+  if (videoSobre) {
+    var tituloVideo = ok(C.sobre.video.titulo) ? C.sobre.video.titulo : "Conheça a Cardoso Baterias";
+    var blocoVideo = document.createElement("div");
+    blocoVideo.className = "video-destaque" + (videoSobre.vertical ? " video-destaque--vertical" : "");
+    blocoVideo.innerHTML = '<button type="button" class="video-destaque__capa" aria-label="Assistir vídeo: ' + esc(tituloVideo) + '">' +
+      capaVideo(videoSobre, "") + ICONE_PLAY + '<span class="video-destaque__titulo">' + esc(tituloVideo) + "</span></button>";
+    $("#sobre-texto").after(blocoVideo);
+    $(".video-destaque__capa", blocoVideo).addEventListener("click", function () {
+      blocoVideo.innerHTML = '<div class="video-destaque__player">' + playerVideo(videoSobre, tituloVideo) + "</div>";
+      var v = $("video", blocoVideo); if (v) v.focus();
+    });
+  }
+
   /* ------------------------------ serviços ------------------------------ */
   $("#lista-servicos").innerHTML = C.servicos.map(function (s) {
     return '<li class="servico">' + icone(s.icone, "servico__icone") +
@@ -212,7 +309,36 @@
   var filtroAtual = "todos";
   var visiveis = [];
 
-  function ehAntesDepois(it) { return it.tipo === "antesDepois" || ok(it.antes) || ok(it.depois); }
+  function ehAntesDepois(it) { return it.tipo !== "video" && (it.tipo === "antesDepois" || ok(it.antes) || ok(it.depois)); }
+
+  /* ---- vídeos: arquivo próprio, YouTube ou Instagram ---- */
+  function infoVideo(v) {
+    if (!v) return null;
+    var m;
+    if (ok(v.youtube) && (m = String(v.youtube).match(/(?:youtu\.be\/|v=|shorts\/|embed\/|live\/)([\w-]{11})/))) {
+      return { tipo: "youtube", id: m[1], vertical: /shorts\//.test(v.youtube), capa: ok(v.capa) ? v.capa : "https://i.ytimg.com/vi/" + m[1] + "/hqdefault.jpg" };
+    }
+    if (ok(v.instagram) && (m = String(v.instagram).match(/instagram\.com\/(?:reels?|p|tv)\/([\w-]+)/))) {
+      return { tipo: "instagram", id: m[1], vertical: true, capa: ok(v.capa) ? v.capa : "" };
+    }
+    if (ok(v.video)) return { tipo: "arquivo", src: v.video, vertical: !!v.vertical, capa: ok(v.capa) ? v.capa : "" };
+    return null;
+  }
+  function capaVideo(info, alt) {
+    if (info.capa) return '<img src="' + esc(info.capa) + '" alt="' + esc(alt || "") + '" loading="lazy">';
+    if (info.tipo === "arquivo") return '<video src="' + esc(info.src) + '#t=0.5" muted playsinline preload="metadata" tabindex="-1"></video>';
+    return '<div class="marcador marcador--video"><span class="marcador__txt">Vídeo do Instagram</span></div>';
+  }
+  function playerVideo(info, titulo) {
+    if (info.tipo === "youtube") {
+      return '<iframe class="video__iframe" src="https://www.youtube-nocookie.com/embed/' + esc(info.id) + '?autoplay=1&rel=0&playsinline=1&modestbranding=1" title="' + esc(titulo) + '" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+    }
+    if (info.tipo === "instagram") {
+      return '<iframe class="video__iframe" src="https://www.instagram.com/reel/' + esc(info.id) + '/embed" title="' + esc(titulo) + '" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>';
+    }
+    return '<video class="video__arquivo" src="' + esc(info.src) + '"' + (info.capa ? ' poster="' + esc(info.capa) + '"' : "") + ' controls autoplay playsinline preload="metadata"></video>';
+  }
+  var ICONE_PLAY = '<span class="video__play" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13l11-6.5z"/></svg></span>';
 
   function marcador(rotulo, cat) {
     var ic = cat === "testes" ? "teste" : cat === "loja" ? "loja" : cat === "frota" ? "ferramenta" : "bateria";
@@ -235,17 +361,18 @@
     visiveis = P.itens.filter(function (it) { return filtroAtual === "todos" || it.categoria === filtroAtual; });
     $("#galeria").innerHTML = visiveis.map(function (it, i) {
       var ad = ehAntesDepois(it);
-      var placeholder = ad ? !(ok(it.antes) && ok(it.depois)) : !ok(it.foto);
-      var media = ad
+      var vid = infoVideo(it);
+      var placeholder = vid ? false : ad ? !(ok(it.antes) && ok(it.depois)) : !ok(it.foto);
+      var media = vid ? capaVideo(vid, it.alt || it.titulo) + ICONE_PLAY : ad
         ? '<div class="ad-mini"><div>' + midia(it.antes, "Antes: " + it.titulo, "Antes", it.categoria, true) +
           '</div><div>' + midia(it.depois, "Depois: " + it.titulo, "Depois", it.categoria, true) + "</div></div>"
         : midia(it.foto, it.alt || it.titulo, "", it.categoria, true);
-      var label = "Ampliar: " + it.titulo + (ad ? " (antes e depois)" : "") + (placeholder ? " — foto ilustrativa" : "");
+      var label = (vid ? "Assistir vídeo: " : "Ampliar: ") + it.titulo + (ad ? " (antes e depois)" : "") + (placeholder ? " — foto ilustrativa" : "");
       return '<li class="galeria__item">' +
         '<button type="button" class="galeria__btn" data-indice="' + i + '" aria-label="' + esc(label) + '">' +
         '<span class="galeria__midia" aria-hidden="true">' + media + "</span>" +
         '<span class="galeria__info" aria-hidden="true"><span class="galeria__cat">' + esc(nomeCat[it.categoria] || "") +
-        (ad ? " · Antes e depois" : "") + "</span><strong>" + esc(it.titulo) + "</strong></span>" +
+        (ad ? " · Antes e depois" : vid ? " · Vídeo" : "") + "</span><strong>" + esc(it.titulo) + "</strong></span>" +
         "</button></li>";
     }).join("") || '<li class="galeria__vazia">Nenhum trabalho nesta categoria ainda.</li>';
   }
@@ -271,8 +398,12 @@
   function mostrar(i) {
     atual = (i + visiveis.length) % visiveis.length;
     var it = visiveis[atual];
-    var html;
-    if (ehAntesDepois(it)) {
+    var html, vidLb = infoVideo(it);
+    $("#lightbox-midia").classList.toggle("lightbox__midia--vertical", !!(vidLb && vidLb.vertical));
+    $("#lightbox-midia").classList.toggle("lightbox__midia--video", !!vidLb);
+    if (vidLb) {
+      html = playerVideo(vidLb, it.titulo);
+    } else if (ehAntesDepois(it)) {
       html = '<div class="comparar" style="--pos:50%">' +
         '<div class="comparar__camada">' + midia(it.depois, "Depois: " + it.titulo, "Depois", it.categoria) + "</div>" +
         '<div class="comparar__camada comparar__antes">' + midia(it.antes, "Antes: " + it.titulo, "Antes", it.categoria) + "</div>" +
@@ -305,6 +436,7 @@
     if (dlg.open && typeof dlg.close === "function") dlg.close(); else dlg.removeAttribute("open");
   }
   dlg.addEventListener("close", function () {
+    $("#lightbox-midia").innerHTML = ""; // para o vídeo ao fechar
     document.documentElement.classList.remove("sem-rolagem");
     if (origemFoco) origemFoco.focus();
   });
