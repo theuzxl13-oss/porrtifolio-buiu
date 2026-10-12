@@ -76,7 +76,10 @@ window.CONTEUDO = {
     tituloDestaque: "instalação na hora.",
     texto: "Teste de bateria e alternador, instalação e atendimento rápido em 3 unidades na região de Embu-Guaçu e Zona Sul de São Paulo.",
     botao: "Pedir orçamento no WhatsApp",
-    imagem: ""   // foto de fundo opcional, ex.: "assets/fotos/hero.jpg"
+    imagem: "",  // foto de fundo opcional, ex.: "assets/fotos/hero.jpg"
+    // Ilustração do raio. Se o arquivo não existir, o site usa o raio desenhado em código.
+    // Para usar uma imagem, salve em assets/img/ e escreva o caminho, ex.: "assets/img/raio.webp".
+    imagemRaio: ""
   },
 
   /* --------------------------- SOBRE -------------------------- */
@@ -166,29 +169,48 @@ window.CONTEUDO = {
     ]
   },
 
+  /* --------------------- SEÇÃO "NOSSAS LOJAS" --------------------- */
+  lojasSecao: {
+    titulo: "3 lojas para te atender.",
+    texto: "Horários podem mudar em feriados. Na dúvida, chame no WhatsApp."
+  },
+
   /* --------------------------- LOJAS --------------------------- */
   // nota/avaliacoes: copie do Google e atualize "google.dataConsulta".
   // whatsapp: só números (55 + DDD + número). Se "[a confirmar]",
   // o botão usa o WhatsApp principal mencionando a unidade.
-  // buscaMaps: texto usado no botão "Como chegar" (busca no Google Maps).
+  // whatsappObs: texto pequeno ao lado do número (ex.: "central").
+  // horarios: cada linha da tabela de horários.
+  //   • dias: 0=domingo, 1=segunda ... 6=sábado (usado para mostrar "Aberta até 18h").
+  //   • abre/fecha: "08:00", "18:30"...   • fechado: true para dias sem expediente.
+  //   • texto: horário só para exibir (ex.: feriados, entregas), sem entrar no cálculo.
+  //   • destaque: true deixa o horário em laranja (ex.: entregas).
+  // enderecoMapa: endereço completo usado no mapa e no "Como chegar".
   lojas: [
     {
       id: "embu-guacu",
       nome: "Cardoso Baterias Embu-Guaçu",
       apelido: "Embu-Guaçu",
-      endereco: "[a confirmar]",
-      enderecoParcial: "",
-      bairro: "[a confirmar]",
+      endereco: "Rua Emília Pires, 450",
+      bairro: "",
       cidade: "Embu-Guaçu",
       uf: "SP",
       cep: "[a confirmar]",
       telefone: "(11) 96298-6718",
       whatsapp: "5511962986718",
-      horarioGoogle: "Aberto até as 18h",
-      horarios: "[a confirmar]",       // ex.: "Seg. a sex. 8h–18h · Sáb. 8h–13h"
+      whatsappExibicao: "(11) 96298-6718",
+      whatsappObs: "",
+      horarios: [
+        { rotulo: "Segunda a sexta", dias: [1, 2, 3, 4, 5], abre: "08:00", fecha: "18:00" },
+        { rotulo: "Sábado", dias: [6], abre: "08:00", fecha: "15:00" },
+        { rotulo: "Domingo", dias: [0], fechado: true },
+        { rotulo: "Feriados", texto: "09h às 13h" },
+        { rotulo: "Entregas", texto: "09h às 17h", destaque: true }
+      ],
       nota: 4.9,
       avaliacoes: 214,
       trechoAvaliacao: "Baterias e pneus \"remold\". Ótimo atendimento, bons preços!",
+      enderecoMapa: "Rua Emília Pires, 450 - Embu-Guaçu - SP",
       buscaMaps: "Cardoso Baterias Embu-Guaçu",
       linkMaps: ""                     // opcional: link exato da loja no Google Maps
     },
@@ -196,19 +218,24 @@ window.CONTEUDO = {
       id: "cipo",
       nome: "Cardoso Baterias Cipó",
       apelido: "Cipó",
-      endereco: "[a confirmar]",
-      enderecoParcial: "R. Benedito Jandiro Soares / R. Manoel dos Santos",
+      endereco: "Rua Benedito Jandiro Soares, 216",
       bairro: "Cipó",
-      cidade: "[a confirmar]",
-      uf: "[a confirmar]",
+      cidade: "Embu-Guaçu",
+      uf: "SP",
       cep: "[a confirmar]",
       telefone: "[a confirmar]",
-      whatsapp: "[a confirmar]",
-      horarioGoogle: "Abre às 8h30",
-      horarios: "[a confirmar]",
+      whatsapp: "5511962986718",
+      whatsappExibicao: "(11) 96298-6718",
+      whatsappObs: "central",
+      horarios: [
+        { rotulo: "Segunda a sexta", dias: [1, 2, 3, 4, 5], abre: "08:30", fecha: "18:00" },
+        { rotulo: "Sábado", dias: [6], abre: "08:30", fecha: "16:00" },
+        { rotulo: "Domingo", dias: [0], fechado: true }
+      ],
       nota: 5.0,
       avaliacoes: 16,
       trechoAvaliacao: "Já trocamos baterias dos nossos carros.",
+      enderecoMapa: "Rua Benedito Jandiro Soares, 216 - Cipó, Embu-Guaçu - SP",
       buscaMaps: "Cardoso Baterias Cipó",
       linkMaps: ""
     },
@@ -216,19 +243,25 @@ window.CONTEUDO = {
       id: "jardim-angela",
       nome: "Cardoso Baterias Jardim Ângela",
       apelido: "Jardim Ângela",
-      endereco: "[a confirmar]",
-      enderecoParcial: "",
-      bairro: "Jardim Ângela",
+      endereco: "Av. Comendador Sant'Anna, 11",
+      bairro: "Capão Redondo",
       cidade: "São Paulo",
       uf: "SP",
-      cep: "[a confirmar]",
+      cep: "[a confirmar]",            // o Google Maps indica 05866-000
       telefone: "(11) 96260-4092",
-      whatsapp: "[a confirmar]",
-      horarioGoogle: "Aberto até as 18h",
-      horarios: "[a confirmar]",
+      whatsapp: "5511962604092",
+      whatsappExibicao: "(11) 96260-4092",
+      whatsappObs: "",
+      horarios: [
+        { rotulo: "Segunda a sexta", dias: [1, 2, 3, 4, 5], abre: "08:00", fecha: "18:00" },
+        { rotulo: "Sábado", dias: [6], abre: "08:00", fecha: "16:00" },
+        { rotulo: "Domingo", dias: [0], fechado: true },
+        { rotulo: "Entregas", texto: "09h às 17h", destaque: true }
+      ],
       nota: 4.9,
       avaliacoes: 94,
       trechoAvaliacao: "Troquei minha bateria no início do mês, fui muito bem atendido.",
+      enderecoMapa: "Av. Comendador Sant'Anna, 11 - Capão Redondo, São Paulo - SP",
       buscaMaps: "Cardoso Baterias Jardim Ângela São Paulo SP",
       linkMaps: ""
     }

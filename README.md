@@ -55,8 +55,17 @@ topo, sobre, serviços, marcas, portfólio, lojas, depoimentos, perguntas freque
 - **Título e descrição no Google:** ficam no começo do `index.html`, nas tags `<title>` e
   `<meta name="description">`, porque o Google e o WhatsApp leem essas tags sem executar JavaScript.
 
+### Lojas: endereço, horários e mapa
+Em `lojas`, cada loja tem `endereco`, `bairro`, `cidade`, `uf` e `enderecoMapa` (o endereço completo que vai para o mapa e para o botão “Como chegar”).
+- **Horários:** ficam numa lista, uma linha por tipo de dia. `dias` vai de 0 = domingo a 6 = sábado; `abre`/`fecha` usam o formato `"08:30"`.
+- **Status:** o site calcula sozinho, no horário de São Paulo, se a loja está “Aberta até 18h” ou “Fechada · abre às…”.
+- **Linhas só informativas** (feriados, entregas): use `texto`. `destaque: true` deixa o horário em laranja.
+
+### Raio do topo em imagem
+Salve a imagem (de preferência `.webp`, com até ~300 KB) em `assets/img/` e preencha `hero.imagemRaio`, por exemplo `"assets/img/raio.webp"`. O fundo escuro da imagem se funde ao fundo do site. Com o campo vazio, o site usa o raio desenhado em código.
+
 ### Depois de qualquer alteração: atualize a versão
-No `index.html`, aumente o número em `?v=1.7.0` (ex.: para `?v=1.7.1`) **em todas as linhas**
+No `index.html`, aumente o número em `?v=1.8.0` (ex.: para `?v=1.8.1`) **em todas as linhas**
 (`estilo.css`, `conteudo.js`, `app.js` e ícones). Assim, quem já visitou o site não continua vendo a
 versão antiga guardada em cache.
 
@@ -119,11 +128,8 @@ As cores ficam no começo de `css/estilo.css`.
 - a **logo em resolução maior** (a atual tem só 140×59 px).
 
 **Dados “[a confirmar]”** em `js/conteudo.js`:
-- endereço completo e CEP das 3 lojas (Cipó: só há o trecho “R. Benedito Jandiro Soares / R. Manoel dos Santos”);
-- cidade e UF da unidade Cipó;
-- telefone e WhatsApp da unidade Cipó;
-- se o número (11) 96260-4092 do Jardim Ângela também é WhatsApp;
-- horários completos de funcionamento das 3 lojas (hoje o site mostra só o que o Google exibia em 05/10/2026);
+- CEP das 3 lojas;
+- telefone fixo da unidade Cipó (hoje ela usa o WhatsApp central);
 - área atendida, CNPJ, Instagram/Facebook, e-mail e ano de fundação (opcionais);
 - link da loja virtual;
 - (opcional) link exato de cada loja no Google Maps (`linkMaps`). Sem ele, “Como chegar” faz uma busca pelo nome.

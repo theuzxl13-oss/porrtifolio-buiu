@@ -37,7 +37,8 @@
   }
   function linkMaps(loja) {
     if (ok(loja.linkMaps)) return loja.linkMaps;
-    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(loja.buscaMaps || loja.nome);
+    var q = ok(loja.enderecoMapa) ? (loja.nome + ", " + loja.enderecoMapa) : (loja.buscaMaps || loja.nome);
+    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
   }
   function fmtNota(n) {
     return Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -120,6 +121,17 @@
   if (ok(C.hero.imagem)) {
     $(".hero__fundo").style.backgroundImage = "linear-gradient(90deg,rgba(11,11,12,.92) 30%,rgba(11,11,12,.55)),url('" + C.hero.imagem + "')";
     $(".hero").classList.add("hero--foto");
+  }
+  if (ok(C.hero.imagemRaio)) {
+    var raio = new Image();
+    raio.onload = function () {
+      raio.className = "ilustra ilustra--foto";
+      raio.alt = "";
+      raio.setAttribute("aria-hidden", "true");
+      var svg = $(".ilustra--raio");
+      if (svg) svg.replaceWith(raio);
+    };
+    raio.src = C.hero.imagemRaio;
   }
   var linkGoogle = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(C.google.buscaMaps);
   $$("[data-maps]").forEach(function (a) { a.href = linkGoogle; });
@@ -288,50 +300,148 @@
   });
 
   /* -------------------------------- lojas -------------------------------- */
-  function localLoja(l) {
-    var partes = [l.bairro, ok(l.cidade) ? l.cidade + (ok(l.uf) ? " - " + l.uf : "") : ""].filter(ok);
-    // evita repetir "Cipó" quando bairro = apelido e não há cidade
-    return partes.join(", ");
+  /* ---- horários e status (calculado no fuso de São Paulo) ---- */
+  var NOMES_DIA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+  function minutos(h) { var p = String(h).split(":"); return (+p[0]) * 60 + (+(p[1] || 0)); }
+  function fmtHora(h) { var p = String(h).split(":"); return p[0] + "h" + (p[1] && p[1] !== "00" ? p[1] : ""); }
+  function agoraSP() {
+    var partes = {};
+    new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+      .formatToParts(new Date()).forEach(function (x) { partes[x.type] = x.value; });
+    return { dia: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(partes.weekday), min: (+partes.hour % 24) * 60 + (+partes.minute) };
+  }
+  function linhaDoDia(l, dia) {
+    return (l.horarios || []).filter(function (h) { return h.dias && h.dias.indexOf(dia) !== -1; })[0];
+  }
+  function statusLoja(l) {
+    if (!Array.isArray(l.horarios) || !l.horarios.some(function (h) { return h.dias; })) return null;
+    var t = agoraSP(), hoje = linhaDoDia(l, t.dia);
+    if (hoje && !hoje.fechado && hoje.abre) {
+      if (t.min >= minutos(hoje.abre) && t.min < minutos(hoje.fecha)) return { aberta: true, texto: "Aberta até " + fmtHora(hoje.fecha) };
+      if (t.min < minutos(hoje.abre)) return { aberta: false, texto: "Fechada · abre às " + fmtHora(hoje.abre) };
+    }
+    for (var i = 1; i <= 7; i++) {
+      var d = (t.dia + i) % 7, prox = linhaDoDia(l, d);
+      if (prox && !prox.fechado && prox.abre) {
+        return { aberta: false, texto: "Fechada · abre " + (i === 1 ? "amanhã" : NOMES_DIA[d]) + " às " + fmtHora(prox.abre) };
+      }
+    }
+    return { aberta: false, texto: "Fechada" };
+  }
+  function valorHorario(h) {
+    if (h.fechado) return "Fechado";
+    if (h.abre && h.fecha) return fmtHora(h.abre) + " às " + fmtHora(h.fecha);
+    return h.texto || "";
+  }
+  function htmlStatus(l) {
+    var st = statusLoja(l);
+    if (!st) return "";
+    return '<span class="status ' + (st.aberta ? "status--aberta" : "status--fechada") + '"><span class="status__ponto" aria-hidden="true"></span>' + esc(st.texto) + "</span>";
+  }
+  function atualizarStatus() {
+    lojas.forEach(function (l) {
+      $$('[data-status="' + l.id + '"]').forEach(function (el) { el.innerHTML = htmlStatus(l); });
+    });
+  }
+
+  /* ---- textos e links de cada loja ---- */
+  function cidadeLoja(l) {
+    var partes = [];
+    if (ok(l.bairro) && l.bairro !== l.cidade) partes.push(l.bairro);
+    if (ok(l.cidade)) partes.push(l.cidade);
+    if (ok(l.uf)) partes.push(l.uf);
+    return partes.join(" - ");
   }
   function enderecoLoja(l) {
-    if (ok(l.endereco)) return esc(l.endereco);
-    if (ok(l.enderecoParcial)) return esc(l.enderecoParcial) + ' <span class="obs">(endereço parcial)</span>' + pend("Endereço completo");
-    return 'Consulte pelo WhatsApp' + pend("Endereço");
-  }
-  function horarioLoja(l) {
-    if (ok(l.horarios)) return esc(l.horarios);
-    var g = ok(l.horarioGoogle) ? esc(l.horarioGoogle) + ' <span class="obs">(segundo o Google em ' + esc(dataConsulta) + ")</span>" : "Consulte pelo WhatsApp";
-    return g + pend("Horário completo");
+    if (ok(l.endereco)) return esc(l.endereco) + (cidadeLoja(l) ? "<br>" + esc(cidadeLoja(l)) : "");
+    return "Consulte pelo WhatsApp" + pend("Endereço");
   }
   function mensagemLoja(l) {
     return "Olá! Vim pelo site da Cardoso Baterias e gostaria de um orçamento na unidade " + l.apelido + ". Meu veículo é [marca/modelo/ano].";
   }
-  function botoesLoja(l) {
-    return '<div class="loja__botoes">' +
-      '<a class="btn btn--primario" href="' + esc(linkWhats(mensagemLoja(l), l.whatsapp)) + '" target="_blank" rel="noopener" aria-label="WhatsApp da unidade ' + esc(l.apelido) + '">' + icone("whats", "icone icone--btn") + "WhatsApp</a>" +
-      (ok(l.telefone) ? '<a class="btn btn--contorno" href="' + linkTel(l.telefone) + '" aria-label="Ligar para a unidade ' + esc(l.apelido) + ": " + esc(l.telefone) + '">' + icone("telefone", "icone icone--btn") + "Ligar</a>" : "") +
-      '<a class="btn btn--contorno" href="' + esc(linkMaps(l)) + '" target="_blank" rel="noopener" aria-label="Como chegar à unidade ' + esc(l.apelido) + ' (abre o Google Maps)">' + icone("pino", "icone icone--btn") + "Como chegar</a>" +
-      "</div>";
+  function linkRota(l) {
+    return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(ok(l.enderecoMapa) ? l.enderecoMapa : (l.buscaMaps || l.nome));
+  }
+  function linkMapaEmbutido(l) {
+    return "https://maps.google.com/maps?q=" + encodeURIComponent(ok(l.enderecoMapa) ? l.enderecoMapa : (l.buscaMaps || l.nome)) + "&z=16&hl=pt-BR&output=embed";
   }
 
   $("#lojas-resumo").innerHTML = "Nota <strong>" + mediaTxt + "</strong> no Google com <strong>" + fmtInt(totalAval) +
-    " avaliações</strong> nas " + lojas.length + " lojas (consulta em " + esc(dataConsulta) + ").";
+    " avaliações</strong> (consulta em " + esc(dataConsulta) + ").";
 
   $("#lista-lojas").innerHTML = lojas.map(function (l) {
-    return '<li class="loja" id="loja-' + esc(l.id) + '">' +
-      '<h3 class="loja__nome">' + esc(l.nome) + "</h3>" +
-      (localLoja(l) ? '<p class="loja__local">' + esc(localLoja(l)) + (ok(l.cidade) ? "" : pend("Cidade")) + "</p>" : "") +
-      '<a class="loja__nota" href="' + esc(linkMaps(l)) + '" target="_blank" rel="noopener" aria-label="Nota ' + fmtNota(l.nota) + " de 5 no Google com " + l.avaliacoes + " avaliações (abre o Google Maps)" + '">' +
-      '<span class="loja__nota-num">' + fmtNota(l.nota) + "</span>" + estrelas(l.nota) +
-      "<span>" + fmtInt(l.avaliacoes) + " avaliações no Google</span></a>" +
+    var tabela = (Array.isArray(l.horarios) ? l.horarios : []).map(function (h) {
+      var cls = h.fechado ? " class=\"horario--fechado\"" : h.destaque ? " class=\"horario--destaque\"" : "";
+      return "<div><dt>" + esc(h.rotulo) + "</dt><dd" + cls + ">" + esc(valorHorario(h)) + "</dd></div>";
+    }).join("");
+    var numWhats = ok(l.whatsappExibicao) ? l.whatsappExibicao : C.whatsapp.exibicao;
+    return '<li class="loja" id="loja-' + esc(l.id) + '" data-loja="' + esc(l.id) + '">' +
+      '<div class="loja__topo"><p class="loja__marca">' + esc(C.empresa.nome) + '</p><span class="loja__selo">No mapa</span></div>' +
+      '<h3 class="loja__nome">' + esc(l.apelido) + "</h3>" +
+      '<p class="loja__status" data-status="' + esc(l.id) + '">' + htmlStatus(l) + "</p>" +
+      '<a class="loja__nota" href="' + esc(linkMaps(l)) + '" target="_blank" rel="noopener" aria-label="Nota ' + fmtNota(l.nota) + " de 5 no Google com " + l.avaliacoes + ' avaliações (abre o Google Maps)">' +
+      '<span class="loja__nota-num">' + fmtNota(l.nota) + "</span>" + estrelas(l.nota) + "<span>" + fmtInt(l.avaliacoes) + " avaliações no Google</span></a>" +
+      '<address class="loja__endereco">' + enderecoLoja(l) + "</address>" +
+      (tabela ? '<dl class="loja__horarios">' + tabela + "</dl>" : '<p class="loja__endereco">Horários: consulte pelo WhatsApp' + pend("Horários") + "</p>") +
+      '<p class="loja__whats">WhatsApp: <a href="' + esc(linkWhats(mensagemLoja(l), l.whatsapp)) + '" target="_blank" rel="noopener">' + esc(numWhats) + "</a>" +
+      (ok(l.whatsappObs) ? ' <span class="obs">(' + esc(l.whatsappObs) + ")</span>" : "") + "</p>" +
       (ok(l.trechoAvaliacao) ? '<blockquote class="loja__trecho"><p>“' + esc(l.trechoAvaliacao) + '”</p><footer>Avaliação no Google</footer></blockquote>' : "") +
-      '<dl class="loja__dados">' +
-      "<div><dt>" + icone("pino") + "Endereço</dt><dd>" + enderecoLoja(l) + "</dd></div>" +
-      "<div><dt>" + icone("telefone") + "Telefone</dt><dd>" +
-      (ok(l.telefone) ? '<a href="' + linkTel(l.telefone) + '">' + esc(l.telefone) + "</a>" : "Fale pelo WhatsApp principal" + pend("Telefone")) + "</dd></div>" +
-      "<div><dt>" + icone("relogio") + "Horário</dt><dd>" + horarioLoja(l) + "</dd></div>" +
-      "</dl>" + botoesLoja(l) + "</li>";
+      '<div class="loja__botoes">' +
+      '<a class="btn btn--whats" href="' + esc(linkWhats(mensagemLoja(l), l.whatsapp)) + '" target="_blank" rel="noopener" aria-label="WhatsApp da unidade ' + esc(l.apelido) + '">' + icone("whats", "icone icone--btn") + "WhatsApp</a>" +
+      '<a class="btn btn--contorno" href="' + esc(linkRota(l)) + '" target="_blank" rel="noopener" aria-label="Como chegar à unidade ' + esc(l.apelido) + ' (abre o Google Maps)">Como chegar</a>' +
+      "</div>" +
+      '<button type="button" class="loja__ver-mapa" data-mapa="' + esc(l.id) + '">Ver esta loja no mapa</button>' +
+      "</li>";
   }).join("");
+
+  /* ---- mapa com abas ---- */
+  var lojaNoMapa = null;
+  $("#mapa-abas").innerHTML = lojas.map(function (l, i) {
+    return '<button type="button" role="tab" class="mapa__aba" id="aba-' + esc(l.id) + '" data-aba="' + esc(l.id) + '" aria-controls="mapa-area" aria-selected="false" tabindex="-1">' + esc(l.apelido) + "</button>";
+  }).join("");
+  function mostrarNoMapa(id, focar) {
+    var l = lojaPorId[id];
+    if (!l) return;
+    lojaNoMapa = id;
+    $$(".mapa__aba").forEach(function (b) {
+      var sel = b.getAttribute("data-aba") === id;
+      b.setAttribute("aria-selected", String(sel));
+      b.tabIndex = sel ? 0 : -1;
+      if (sel && focar) b.focus();
+    });
+    $$(".loja").forEach(function (c) { c.classList.toggle("loja--ativa", c.getAttribute("data-loja") === id); });
+    $("#mapa-area").setAttribute("aria-labelledby", "aba-" + id);
+    var iframe = $("#mapa-iframe");
+    iframe.title = "Mapa da " + l.nome;
+    iframe.src = linkMapaEmbutido(l);
+    $("#mapa-cartao").innerHTML =
+      "<div><strong>" + esc(ok(l.endereco) ? l.endereco : l.nome) + "</strong>" +
+      "<span>" + esc(ok(l.enderecoMapa) ? l.enderecoMapa : cidadeLoja(l)) + "</span></div>" +
+      '<a class="mapa__icone" href="' + esc(linkMaps(l)) + '" target="_blank" rel="noopener" aria-label="Abrir ' + esc(l.nome) + ' no Google Maps">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3zM5 5h6v2H5v12h12v-6h2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg></a>' +
+      '<a class="mapa__icone" href="' + esc(linkRota(l)) + '" target="_blank" rel="noopener" aria-label="Traçar rota até ' + esc(l.nome) + '">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="m21.7 11.3-9-9a1 1 0 0 0-1.4 0l-9 9a1 1 0 0 0 0 1.4l9 9a1 1 0 0 0 1.4 0l9-9a1 1 0 0 0 0-1.4zM14 14.5V12h-4v3H8v-4a1 1 0 0 1 1-1h5V7.5l3.5 3.5-3.5 3.5z"/></svg></a>';
+  }
+  $("#mapa-abas").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-aba]");
+    if (b) mostrarNoMapa(b.getAttribute("data-aba"));
+  });
+  $("#mapa-abas").addEventListener("keydown", function (e) {
+    var ids = lojas.map(function (l) { return l.id; }), i = ids.indexOf(lojaNoMapa);
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      e.preventDefault();
+      mostrarNoMapa(ids[(i + (e.key === "ArrowRight" ? 1 : ids.length - 1)) % ids.length], true);
+    }
+  });
+  $("#lista-lojas").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-mapa]");
+    if (!b) return;
+    mostrarNoMapa(b.getAttribute("data-mapa"));
+    $("#mapa").scrollIntoView({ behavior: "smooth", block: "center" });
+    $('[data-aba="' + b.getAttribute("data-mapa") + '"]').focus({ preventScroll: true });
+  });
+  if (lojas.length) mostrarNoMapa(lojas[0].id);
+  setInterval(atualizarStatus, 60000);
 
   /* ----------------------------- depoimentos ----------------------------- */
   $("#lista-depoimentos").innerHTML = (C.depoimentos || []).filter(function (d) { return ok(d.texto); }).map(function (d) {
@@ -358,10 +468,13 @@
     ? "<strong>Área atendida:</strong> " + esc(C.empresa.areaAtendida)
     : "<strong>Onde estamos:</strong> unidades em " + esc(listaPt(apelidos)) + "." + pend("Área atendida");
   $("#contato-lojas").innerHTML = lojas.map(function (l) {
+    var numWhats = ok(l.whatsappExibicao) ? l.whatsappExibicao : C.whatsapp.exibicao;
     return '<li class="contato__loja"><h3>' + esc(l.nome) + "</h3>" +
-      "<p>" + (ok(l.telefone) ? '<a href="' + linkTel(l.telefone) + '">' + icone("telefone") + esc(l.telefone) + "</a>" : icone("telefone") + "Telefone: fale pelo WhatsApp principal" + pend("Telefone")) + "</p>" +
-      "<p>" + icone("relogio") + horarioLoja(l) + "</p>" +
-      '<p><a href="' + esc(linkMaps(l)) + '" target="_blank" rel="noopener">' + icone("pino") + "Como chegar</a></p></li>";
+      '<p data-status="' + esc(l.id) + '">' + htmlStatus(l) + "</p>" +
+      '<p><a href="' + esc(linkWhats(mensagemLoja(l), l.whatsapp)) + '" target="_blank" rel="noopener">' + icone("whats") + "WhatsApp " + esc(numWhats) + "</a>" +
+      (ok(l.whatsappObs) ? ' <span class="obs">(' + esc(l.whatsappObs) + ")</span>" : "") + "</p>" +
+      (ok(l.telefone) ? '<p><a href="' + linkTel(l.telefone) + '">' + icone("telefone") + "Ligar " + esc(l.telefone) + "</a></p>" : "") +
+      '<p><a href="' + esc(linkRota(l)) + '" target="_blank" rel="noopener">' + icone("pino") + "Como chegar</a></p></li>";
   }).join("");
 
   /* ------------------------------- rodapé ------------------------------- */
@@ -420,7 +533,8 @@
       parentOrganization: { "@id": base + "#empresa" },
       brand: { "@type": "Brand", name: C.empresa.nome }
     };
-    if (ok(l.telefone)) n.telephone = "+55-" + so_digitos(l.telefone).replace(/^(\d{2})(\d+)(\d{4})$/, "$1-$2-$3");
+    var telLD = ok(l.telefone) ? l.telefone : l.whatsappExibicao;
+    if (ok(telLD)) n.telephone = "+55-" + so_digitos(telLD).replace(/^(\d{2})(\d+)(\d{4})$/, "$1-$2-$3");
     var end = { "@type": "PostalAddress", addressCountry: "BR" };
     if (ok(l.endereco)) end.streetAddress = l.endereco;
     if (ok(l.cidade)) end.addressLocality = l.cidade;
@@ -428,6 +542,11 @@
     if (ok(l.cep)) end.postalCode = l.cep;
     n.address = end;
     if (ok(l.linkMaps)) n.hasMap = l.linkMaps;
+    var DIAS_SCHEMA = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    var horas = (Array.isArray(l.horarios) ? l.horarios : []).filter(function (h) { return h.dias && h.abre && h.fecha && !h.fechado; });
+    if (horas.length) n.openingHoursSpecification = horas.map(function (h) {
+      return { "@type": "OpeningHoursSpecification", dayOfWeek: h.dias.map(function (d) { return DIAS_SCHEMA[d]; }), opens: h.abre, closes: h.fecha };
+    });
     grafo.push(n);
   });
   var ld = document.createElement("script");
