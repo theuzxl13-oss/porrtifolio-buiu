@@ -1,13 +1,15 @@
 // Gera cardoso-baterias.mp4 quadro a quadro (sem depender de tempo real).
-// Uso: NODE_PATH=$(npm root -g) node gerar-mp4.cjs [--previa 3,10,19.6]
+// Uso: NODE_PATH=$(npm root -g) node gerar-mp4.cjs [--site] [--previa 3,10,19.6]
 const { chromium } = require("playwright");
 const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
 const aqui = __dirname;
-const html = "file://" + path.join(aqui, "cardoso-baterias-video.html");
-const saida = path.join(aqui, "cardoso-baterias.mp4");
+// --site gera o vídeo deitado do site; sem ele, o vídeo em pé das redes sociais
+const site = process.argv.includes("--site");
+const html = "file://" + path.join(aqui, site ? "cardoso-site-video.html" : "cardoso-baterias-video.html");
+const saida = path.join(aqui, site ? "cardoso-site.mp4" : "cardoso-baterias.mp4");
 const previa = process.argv.indexOf("--previa");
 
 (async () => {

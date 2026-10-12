@@ -593,6 +593,31 @@
     document.body.prepend(faixaPrevia);
   }
 
+  /* ------------------------------ vídeo ------------------------------ */
+  // Toca sem som quando aparece na tela e pausa quando sai. O botão liga o som e recomeça do início.
+  var video = $("#video-cardoso"), botaoSom = $("#video-som");
+  if (video && botaoSom) {
+    var semMovimento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var tocar = function () { var p = video.play(); if (p && p.catch) p.catch(function () {}); };
+    if (semMovimento) video.controls = true;
+    else if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (itens) {
+        itens.forEach(function (it) {
+          if (it.isIntersecting) { if (video.paused) tocar(); } else if (!video.paused) video.pause();
+        });
+      }, { threshold: 0.5 }).observe(video);
+    }
+    botaoSom.addEventListener("click", function () {
+      if (video.muted) {
+        video.muted = false; video.currentTime = 0; tocar();
+        botaoSom.textContent = "🔇 Tirar som"; botaoSom.setAttribute("aria-pressed", "true");
+      } else {
+        video.muted = true;
+        botaoSom.textContent = "🔊 Ativar som"; botaoSom.setAttribute("aria-pressed", "false");
+      }
+    });
+  }
+
   /* --------------------------- modo revisão --------------------------- */
   if (revisao) {
     var faltam = [];

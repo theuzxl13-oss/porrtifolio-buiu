@@ -115,6 +115,18 @@ A imagem enviada é pequena (140×59 px). Se tiver o arquivo em resolução maio
 As marcas aparecem em cartões só com o nome, sem logotipos. Se um fabricante autorizar o uso da logo, salve
 a imagem em `assets/marcas/`, preencha `imagem` e mude `imagemAutorizada` para `true`.
 
+## Vídeo "Conheça a Cardoso"
+A seção logo abaixo do topo mostra `assets/video/cardoso-site.mp4` (40s, 1280×720, cerca de 5 MB) com a capa
+`assets/video/cardoso-site-capa.jpg`. O vídeo toca sem som quando aparece na tela, pausa quando sai, e o botão
+"Ativar som" recomeça do início com som.
+
+**Para trocar o vídeo:** substitua os dois arquivos mantendo os mesmos nomes e aumente o `?v=` no `index.html`.
+Prefira MP4 (H.264) leve, de até uns 6 MB, para o site continuar rápido no celular.
+
+**Para refazer o vídeo:** o código das animações fica em `video/cardoso/` (`modelo-site.html` é o vídeo do site e
+`modelo.html` é o vídeo em pé de 25s para as redes sociais). Depois de editar, rode `python3 montar.py` e abra
+`cardoso-site-video.html` no Google Chrome do computador. O botão "Baixar MP4" grava o vídeo com som.
+
 ## Visual
 Segue a referência de estilo do n8n:
 - **Fundo e superfícies:** fundo violeta quase preto (#0e0918), cartões #1a1624 e painéis #1b1728, com um degrau de cor entre eles e sem sombras externas.

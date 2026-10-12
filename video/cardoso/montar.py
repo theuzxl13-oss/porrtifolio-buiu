@@ -1,4 +1,5 @@
-"""Monta cardoso-baterias-video.html (arquivo único) a partir de modelo.html,
+"""Monta os arquivos únicos cardoso-baterias-video.html (em pé) e cardoso-site-video.html
+(deitado, para o site) a partir dos modelos,
 embutindo a logo original, o raio da marca e as fontes."""
 import base64, pathlib
 aqui = pathlib.Path(__file__).resolve().parent
@@ -12,8 +13,10 @@ trocas = {
     "{{MONT600}}": uri(aqui / "fontes" / "montserrat-latin-600-normal.woff2", "font/woff2"),
     "{{MONT800}}": uri(aqui / "fontes" / "montserrat-latin-800-normal.woff2", "font/woff2"),
 }
-html = (aqui / "modelo.html").read_text(encoding="utf-8")
-for k, v in trocas.items():
-    html = html.replace(k, v)
-(aqui / "cardoso-baterias-video.html").write_text(html, encoding="utf-8")
-print("ok:", aqui / "cardoso-baterias-video.html")
+# modelo -> arquivo final
+for origem, destino in [("modelo.html", "cardoso-baterias-video.html"), ("modelo-site.html", "cardoso-site-video.html")]:
+    html = (aqui / origem).read_text(encoding="utf-8")
+    for k, v in trocas.items():
+        html = html.replace(k, v)
+    (aqui / destino).write_text(html, encoding="utf-8")
+    print("ok:", aqui / destino)

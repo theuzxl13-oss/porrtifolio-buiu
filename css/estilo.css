@@ -372,6 +372,22 @@ main:focus { outline: none; }
 .comparar:focus-within .comparar__linha::after { outline: 2px solid var(--branco); outline-offset: 3px; }
 
 /* ------------------------------ lojas ------------------------------ */
+/* ------------------------------ vídeo ------------------------------ */
+.video__cabecalho { text-align: center; margin-bottom: var(--s40); }
+.video__moldura {
+  position: relative; max-width: 1040px; margin: 0 auto; border-radius: var(--raio-grande); overflow: hidden;
+  background: #000; box-shadow: var(--anel-brilho), 0 24px 70px rgba(0,0,0,.55), 0 0 80px rgba(255,73,44,.12);
+}
+.video__player { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #0e0918; }
+.video__som {
+  position: absolute; right: var(--s16); bottom: var(--s16); min-height: 48px; padding: 10px var(--s24);
+  border: 0; border-radius: var(--pilula); cursor: pointer; color: #fff; font-size: 1rem;
+  background: rgba(13,10,25,.72); box-shadow: var(--anel); backdrop-filter: blur(6px);
+}
+.video__som:hover { background: rgba(255,73,44,.85); }
+.video__som[aria-pressed="true"] { background: rgba(13,10,25,.55); }
+@media (max-width: 559px) { .video__som { position: static; display: block; width: 100%; border-radius: 0; background: var(--painel); backdrop-filter: none; } }
+
 .lojas__cabecalho { text-align: center; margin-bottom: var(--s40); }
 .etiqueta {
   display: inline-flex; align-items: center; gap: 6px; margin-bottom: var(--s16); padding: 6px 14px;
