@@ -79,7 +79,8 @@ window.CONTEUDO = {
     imagem: "",  // foto de fundo opcional, ex.: "assets/fotos/hero.jpg"
     // Ilustração do raio. Se o arquivo não existir, o site usa o raio desenhado em código.
     // Para usar uma imagem, salve em assets/img/ e escreva o caminho, ex.: "assets/img/raio.webp".
-    imagemRaio: ""
+    imagemRaio: "assets/img/raio.webp",
+    imagemRaioCelular: "assets/img/raio-520.webp"   // versão menor, carregada em telas pequenas
   },
 
   /* --------------------------- SOBRE -------------------------- */

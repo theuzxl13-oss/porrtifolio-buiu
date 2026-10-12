@@ -131,6 +131,10 @@
       var svg = $(".ilustra--raio");
       if (svg) svg.replaceWith(raio);
     };
+    if (ok(C.hero.imagemRaioCelular)) {
+      raio.srcset = C.hero.imagemRaioCelular + " 520w, " + C.hero.imagemRaio + " 800w";
+      raio.sizes = "(min-width: 900px) 640px, 360px";
+    }
     raio.src = C.hero.imagemRaio;
   }
   var linkGoogle = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(C.google.buscaMaps);
