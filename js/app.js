@@ -139,7 +139,24 @@
       raio.alt = "";
       raio.setAttribute("aria-hidden", "true");
       var svg = $(".ilustra--raio");
-      if (svg) { svg.parentNode.classList.add("hero__arte--foto"); svg.replaceWith(raio); }
+      if (svg) {
+        var arte = svg.parentNode;
+        arte.classList.add("hero__arte--foto");
+        svg.replaceWith(raio);
+        // fagulhas que sobem do raio (só decoração)
+        for (var f = 0; f < 14; f++) {
+          var fg = document.createElement("span");
+          fg.className = "fagulha";
+          fg.setAttribute("aria-hidden", "true");
+          fg.style.setProperty("--x", (28 + Math.random() * 46).toFixed(1) + "%");
+          fg.style.setProperty("--y", (30 + Math.random() * 50).toFixed(1) + "%");
+          fg.style.setProperty("--d", (3 + Math.random() * 4).toFixed(2) + "s");
+          fg.style.setProperty("--a", (-Math.random() * 7).toFixed(2) + "s");
+          fg.style.setProperty("--t", (2 + Math.random() * 3).toFixed(1) + "px");
+          fg.style.setProperty("--desvio", ((Math.random() - .5) * 60).toFixed(0) + "px");
+          arte.appendChild(fg);
+        }
+      }
     };
     if (ok(C.hero.imagemRaioCelular)) {
       raio.srcset = C.hero.imagemRaioCelular + " 520w, " + C.hero.imagemRaio + " 800w";

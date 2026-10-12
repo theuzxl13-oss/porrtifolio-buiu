@@ -79,9 +79,9 @@ window.CONTEUDO = {
     botao: "Pedir orçamento no WhatsApp",
     imagem: "",  // foto de fundo opcional, ex.: "assets/fotos/hero.jpg"
     // Ilustração do raio. Se o arquivo não existir, o site usa o raio desenhado em código.
-    // Para usar uma imagem, salve em assets/img/ e escreva o caminho, ex.: "assets/img/raio.webp".
-    imagemRaio: "assets/img/raio.webp",
-    imagemRaioCelular: "assets/img/raio-520.webp"   // versão menor, carregada em telas pequenas
+    // Para usar uma imagem, salve em assets/img/ e escreva o caminho, ex.: "assets/img/raio-transparente.webp".
+    imagemRaio: "assets/img/raio-transparente.webp",
+    imagemRaioCelular: "assets/img/raio-transparente-520.webp"   // versão menor, carregada em telas pequenas
   },
 
   /* --------------------------- SOBRE -------------------------- */
